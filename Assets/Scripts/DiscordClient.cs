@@ -20,22 +20,61 @@ public class DiscordClient : MonoBehaviour
     [SerializeField]
     private bool _logMessagesFromPearl = false;
 
-    private async void Start()
+    private void Start()
     {
-        await StartDiscordClient();
+        Debug.Log("[Discord] Start() entered.");
+
+        _ = StartDiscordClientWrapper();
+    }
+
+    private async Task StartDiscordClientWrapper()
+    {
+        try
+        {
+            Debug.Log("[Discord] StartDiscordClientWrapper() entered.");
+            await StartDiscordClient();
+            Debug.Log("[Discord] StartDiscordClientWrapper() completed.");
+        }
+        catch (Exception exception)
+        {
+            Debug.LogError("[Discord] Startup exception: " + exception);
+        }
+    }
+    
+    private void Awake()
+    {
+        Debug.Log("[Discord] Awake() entered.");
+        Debug.Log("[Discord] Token null? " + (Secrets.DISCORD_BOT_API_KEY == null));
+        Debug.Log("[Discord] Token empty? " + string.IsNullOrEmpty(Secrets.DISCORD_BOT_API_KEY));
+    }
+
+    private void OnEnable()
+    {
+        Debug.Log("[Discord] OnEnable() entered.");
     }
 
     private async Task StartDiscordClient()
     {
+        Debug.Log("[Discord] Creating client...");
+
         _client = new DiscordSocketClient();
+
+        Debug.Log("[Discord] Hooking events...");
 
         _client.Log += OnDiscordLog;
         _client.MessageReceived += OnMessageReceived;
         _client.Connected += OnConnected;
         _client.Disconnected += OnDisconnected;
 
+        Debug.Log("[Discord] Token length: " + (Secrets.DISCORD_BOT_API_KEY == null ? "NULL" : Secrets.DISCORD_BOT_API_KEY.Length.ToString()));
+
+        Debug.Log("[Discord] Logging in...");
         await _client.LoginAsync(TokenType.Bot, Secrets.DISCORD_BOT_API_KEY);
+
+        Debug.Log("[Discord] Starting client...");
         await _client.StartAsync();
+
+        Debug.Log("[Discord] StartAsync returned.");
     }
 
     private void Update()
