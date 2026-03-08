@@ -70,6 +70,8 @@ public class DiscordClient : MonoBehaviour
 
         Debug.Log("[Discord] Token length: " + Secrets.DISCORD_BOT_API_KEY.Length);
 
+        await TestDiscordHttpAsync();
+        
         Debug.Log("[Discord] Logging in...");
 
         var loginTask = _client.LoginAsync(TokenType.Bot, Secrets.DISCORD_BOT_API_KEY);
@@ -84,7 +86,6 @@ public class DiscordClient : MonoBehaviour
 
         Debug.Log("[Discord] Starting client...");
 
-        await TestDiscordHttpAsync();
         
         var startTask = _client.StartAsync();
         completedTask = await Task.WhenAny(startTask, Task.Delay(TimeSpan.FromSeconds(20)));
