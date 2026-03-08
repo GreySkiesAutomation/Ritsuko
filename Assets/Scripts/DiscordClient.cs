@@ -55,6 +55,8 @@ public class DiscordClient : MonoBehaviour
 
     private async Task StartDiscordClient()
     {
+        System.Net.ServicePointManager.SecurityProtocol = System.Net.SecurityProtocolType.Tls12;
+
         Debug.Log("[Discord] Creating client...");
 
         _client = new DiscordSocketClient();
@@ -66,7 +68,7 @@ public class DiscordClient : MonoBehaviour
         _client.Connected += OnConnected;
         _client.Disconnected += OnDisconnected;
 
-        Debug.Log("[Discord] Token length: " + (Secrets.DISCORD_BOT_API_KEY == null ? "NULL" : Secrets.DISCORD_BOT_API_KEY.Length.ToString()));
+        Debug.Log("[Discord] Token length: " + Secrets.DISCORD_BOT_API_KEY.Length);
 
         Debug.Log("[Discord] Logging in...");
         await _client.LoginAsync(TokenType.Bot, Secrets.DISCORD_BOT_API_KEY);
