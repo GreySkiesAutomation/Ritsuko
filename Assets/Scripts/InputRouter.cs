@@ -6,7 +6,7 @@ namespace DefaultNamespace
 
         public void HandleNewMessage(string messageContent)
         {
-            throw new System.NotImplementedException();
+            Debug.Log("[InputRouter] Received new message: " + messageContent);
         }
     }
 }
