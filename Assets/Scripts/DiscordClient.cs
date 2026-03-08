@@ -103,7 +103,13 @@ public class DiscordClient : MonoBehaviour
 
     private Task OnDiscordLog(LogMessage logMessage)
     {
-        Debug.Log("[Discord] " + logMessage);
+        Debug.Log("[Discord] " + logMessage.Severity + " | " + logMessage.Source + " | " + logMessage.Message);
+
+        if (logMessage.Exception != null)
+        {
+            Debug.LogError("[Discord] Exception: " + logMessage.Exception);
+        }
+
         return Task.CompletedTask;
     }
 
