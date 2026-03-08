@@ -71,12 +71,41 @@ public class DiscordClient : MonoBehaviour
         Debug.Log("[Discord] Token length: " + Secrets.DISCORD_BOT_API_KEY.Length);
 
         Debug.Log("[Discord] Logging in...");
-        await _client.LoginAsync(TokenType.Bot, Secrets.DISCORD_BOT_API_KEY);
+
+        var loginTask = _client.LoginAsync(TokenType.Bot, Secrets.DISCORD_BOT_API_KEY);
+        var completedTask = await Task.WhenAny(loginTask, Task.Delay(TimeSpan.FromSeconds(20)));
+
+        if (completedTask != loginTask)
+        {
+            throw new TimeoutException("[Discord] LoginAsync timed out after 20 seconds.");
+        }
+
+        await loginTask;
 
         Debug.Log("[Discord] Starting client...");
-        await _client.StartAsync();
+
+        await TestDiscordHttpAsync();
+        
+        var startTask = _client.StartAsync();
+        completedTask = await Task.WhenAny(startTask, Task.Delay(TimeSpan.FromSeconds(20)));
+
+        if (completedTask != startTask)
+        {
+            throw new TimeoutException("[Discord] StartAsync timed out after 20 seconds.");
+        }
+
+        await startTask;
 
         Debug.Log("[Discord] StartAsync returned.");
+    }
+    
+    private async Task TestDiscordHttpAsync()
+    {
+        using (var httpClient = new System.Net.Http.HttpClient())
+        {
+            var response = await httpClient.GetAsync("https://discord.com");
+            Debug.Log("[Discord] HTTP status: " + response.StatusCode);
+        }
     }
 
     private void Update()
