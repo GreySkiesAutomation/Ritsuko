@@ -102,6 +102,7 @@ public class DiscordClient : MonoBehaviour
     
     private async Task TestDiscordHttpAsync()
     {
+        Debug.Log("[Discord] Testing HTTP connectivity to Discord...");
         using (var httpClient = new System.Net.Http.HttpClient())
         {
             var response = await httpClient.GetAsync("https://discord.com");
