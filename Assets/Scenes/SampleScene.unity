@@ -2256,30 +2256,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fda1e07d54d401c4b8b900bb59ebc059, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _portName: COM8
-  _baudRate: 115200
-  _testServo1Angle: 180
-  _testServo1: 0
-  _testServo1AngleMin: 85
-  _testServo1AngleMax: 180
-  LatestDistanceCm: 0
-  _deltaDistanceChangeToAssumeUserPresenceCm: 10
-  _previousDistanceCm: 0
-  _secondsUserHasntMovedToAssumeAway: 6
-  _userIsHere: 0
-  _userWentAwayLines:
-  - Done with your work so soon?
-  - Your break starts now.
-  - Bye.
-  - I guess you don't want to hang out with me.
-  - Something more important than work?
-  _userCameBackLines:
-  - Back from slacking off?
-  - how was your gooning break?
-  - Ahem, breaks are up to 3 minutes long.
-  - That was an awfully long time to make tea.
-  - That's the 4th lunch you took today.
-  _speakAndEmoteController: {fileID: 91771340}
 --- !u!4 &844601432
 Transform:
   m_ObjectHideFlags: 0
@@ -2825,6 +2801,52 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1008511825}
   m_CullTransparentMesh: 1
+--- !u!1 &1126481172
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1126481174}
+  - component: {fileID: 1126481173}
+  m_Layer: 0
+  m_Name: Discord stuff
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1126481173
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1126481172}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 57d5582bf1e44564b36e599ff93c7d5a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _inputRouter: {fileID: 0}
+  _logMessagesFromPearl: 0
+--- !u!4 &1126481174
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1126481172}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 1.7394563, y: 0.5267778, z: 4.9358883}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1318318096
 GameObject:
   m_ObjectHideFlags: 0
@@ -3194,6 +3216,51 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: -2.75, y: 1.47, z: -7.807}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1425339350
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1425339352}
+  - component: {fileID: 1425339351}
+  m_Layer: 0
+  m_Name: GameManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1425339351
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1425339350}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f5249567a8fb4165a3f033354db10f26, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _quitHoldDurationSeconds: 3
+--- !u!4 &1425339352
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1425339350}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 1.7394563, y: 0.5267778, z: 4.9358883}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -3908,6 +3975,7 @@ Transform:
 SceneRoots:
   m_ObjectHideFlags: 0
   m_Roots:
+  - {fileID: 1425339352}
   - {fileID: 963194228}
   - {fileID: 705507995}
   - {fileID: 553827370}
@@ -3917,3 +3985,4 @@ SceneRoots:
   - {fileID: 844601432}
   - {fileID: 1582701189}
   - {fileID: 91771339}
+  - {fileID: 1126481174}
