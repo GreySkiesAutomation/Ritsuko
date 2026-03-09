@@ -4233,7 +4233,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5937364112142185101, guid: ce53c11149c23924cbb81f53eaa1d79f, type: 3}
       propertyPath: m_Name
-      value: Ritsuko_v1_1
+      value: Ritsuko_v1_1_OfficeLady
       objectReference: {fileID: 0}
     - target: {fileID: 6057337676010344492, guid: ce53c11149c23924cbb81f53eaa1d79f, type: 3}
       propertyPath: Target
