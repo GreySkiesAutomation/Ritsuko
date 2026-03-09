@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.IO;
 using NaughtyAttributes;
 using Newtonsoft.Json;
 using UnityEngine;
@@ -66,9 +67,14 @@ namespace DefaultNamespace
             public string conversationState;
         }
 
+        [Serializable]
+        private class ConversationHistoryFileData
+        {
+            public List<ConversationMessage> ConversationHistory = new List<ConversationMessage>();
+        }
+
         [Header("Dependencies")]
         [SerializeField] private SpeakAndEmoteController _speakAndEmoteController;
-
         [SerializeField] private OpenRouterChatClient _llmClient;
         [SerializeField] private DiscordClient _discordClient;
 
@@ -130,6 +136,12 @@ namespace DefaultNamespace
         [Header("Time")]
         [SerializeField] private string _timeZoneId = "Central Standard Time";
 
+        [Header("Persistence")]
+        [SerializeField] private string _historyFileName = "query_handler_history.json";
+
+        [ReadOnly]
+        [SerializeField] private string _historyFilePath;
+
         [Header("Stats")]
         [ReadOnly]
         [SerializeField] private int _storedConversationMessageCount;
@@ -148,11 +160,19 @@ namespace DefaultNamespace
 
         private readonly List<ConversationMessage> _conversationHistory = new List<ConversationMessage>();
 
+        private void Awake()
+        {
+            _historyFilePath = GetHistoryFilePath();
+            LoadHistoryFromDisk();
+            RefreshStats();
+        }
+
         [Button("Reset")]
         public void ResetHistory()
         {
             _conversationHistory.Clear();
             _inspectorConversationHistory.Clear();
+            SaveHistoryToDisk();
             RefreshStats();
             Debug.Log("[QueryHandler] Conversation history reset.");
             MarkDirty();
@@ -198,6 +218,7 @@ namespace DefaultNamespace
                 AddConversationMessage("user", messageContent, userTimestamp);
                 AddConversationMessage("assistant", structuredAssistantResponse.reply, GetCurrentLocalAustinTimeDisplay());
                 TrimConversationHistoryToLimit();
+                SaveHistoryToDisk();
 
                 if (string.Equals(structuredAssistantResponse.conversationState, "RESET", StringComparison.OrdinalIgnoreCase))
                 {
@@ -206,7 +227,8 @@ namespace DefaultNamespace
                 }
 
                 SendResponseToSource(
-                    structuredAssistantResponse.reply, messageContent,
+                    structuredAssistantResponse.reply,
+                    messageContent,
                     source,
                     !string.Equals(structuredAssistantResponse.conversationState, "END", StringComparison.OrdinalIgnoreCase));
 
@@ -230,8 +252,8 @@ namespace DefaultNamespace
             else if (source == QuerySource.Microphone)
             {
                 _speakAndEmoteController.SendPhraseAndGetEmotion(cleanedResponse, promptAfterwards);
-                
-                if(_auditHistoryToDiscord)
+
+                if (_auditHistoryToDiscord)
                 {
                     var auditMessage = $"**Spoken query from user:** \"{originalQuery}\"\n\n**Spoken response sent to user:** \"{cleanedResponse}\"";
                     _discordClient.SendDirectMessage(auditMessage);
@@ -280,9 +302,11 @@ namespace DefaultNamespace
 
         private string FormatMessageForModel(string content, string localTimestampDisplay, QuerySource? source)
         {
-            var messageEnvelope = new ModelInputMessageEnvelope();
-            messageEnvelope.local_time_austin = localTimestampDisplay;
-            messageEnvelope.message = content;
+            var messageEnvelope = new ModelInputMessageEnvelope
+            {
+                local_time_austin = localTimestampDisplay,
+                message = content
+            };
 
             if (source.HasValue)
             {
@@ -417,6 +441,7 @@ namespace DefaultNamespace
             _userMessageCount = 0;
             _assistantMessageCount = 0;
             _currentLocalAustinTimeDisplay = GetCurrentLocalAustinTimeDisplay();
+            _historyFilePath = GetHistoryFilePath();
 
             for (var i = 0; i < _conversationHistory.Count; i++)
             {
@@ -463,6 +488,117 @@ namespace DefaultNamespace
             {
                 return utcDateTime.ToLocalTime();
             }
+        }
+
+        private string GetHistoryFilePath()
+        {
+            var directoryPath = Application.persistentDataPath;
+
+            try
+            {
+                if (!Directory.Exists(directoryPath))
+                {
+                    Directory.CreateDirectory(directoryPath);
+                }
+            }
+            catch (Exception exception)
+            {
+                Debug.LogWarning("[QueryHandler] Failed to ensure persistence directory exists: " + exception.Message);
+            }
+
+            return Path.Combine(directoryPath, _historyFileName);
+        }
+
+        private void LoadHistoryFromDisk()
+        {
+            _conversationHistory.Clear();
+            _inspectorConversationHistory.Clear();
+
+            var filePath = GetHistoryFilePath();
+
+            if (!File.Exists(filePath))
+            {
+                Debug.Log("[QueryHandler] No existing conversation history file found at: " + filePath);
+                MarkDirty();
+                return;
+            }
+
+            try
+            {
+                var json = File.ReadAllText(filePath);
+
+                if (string.IsNullOrWhiteSpace(json))
+                {
+                    Debug.LogWarning("[QueryHandler] Conversation history file was empty.");
+                    MarkDirty();
+                    return;
+                }
+
+                var fileData = JsonConvert.DeserializeObject<ConversationHistoryFileData>(json);
+
+                if (fileData?.ConversationHistory == null)
+                {
+                    Debug.LogWarning("[QueryHandler] Conversation history file did not contain valid history data.");
+                    MarkDirty();
+                    return;
+                }
+
+                for (var i = 0; i < fileData.ConversationHistory.Count; i++)
+                {
+                    var message = fileData.ConversationHistory[i];
+
+                    if (message == null)
+                    {
+                        continue;
+                    }
+
+                    _conversationHistory.Add(message);
+                    _inspectorConversationHistory.Add(
+                        new InspectorChatMessage(message.Role, message.Content, message.LocalTimestampDisplay));
+                }
+
+                TrimConversationHistoryToLimit();
+                Debug.Log("[QueryHandler] Loaded conversation history from disk: " + filePath);
+            }
+            catch (Exception exception)
+            {
+                Debug.LogError("[QueryHandler] Failed to load conversation history: " + exception);
+            }
+
+            RefreshStats();
+            MarkDirty();
+        }
+
+        private void SaveHistoryToDisk()
+        {
+            var filePath = GetHistoryFilePath();
+
+            try
+            {
+                var fileData = new ConversationHistoryFileData
+                {
+                    ConversationHistory = new List<ConversationMessage>(_conversationHistory)
+                };
+
+                var json = JsonConvert.SerializeObject(fileData, Formatting.Indented);
+                var tempFilePath = filePath + ".tmp";
+
+                File.WriteAllText(tempFilePath, json);
+
+                if (File.Exists(filePath))
+                {
+                    File.Delete(filePath);
+                }
+
+                File.Move(tempFilePath, filePath);
+            }
+            catch (Exception exception)
+            {
+                Debug.LogError("[QueryHandler] Failed to save conversation history: " + exception);
+            }
+
+            RefreshStats();
+            MarkDirty();
         }
 
 #if UNITY_EDITOR
