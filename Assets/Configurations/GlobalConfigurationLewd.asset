@@ -10,14 +10,14 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 58e7bbfa702a4addb57b2b2284f0ae27, type: 3}
-  m_Name: GlobalConfiguration
+  m_Name: GlobalConfigurationLewd
   m_EditorClassIdentifier: 
-  GlobalPromptConfiguration: {fileID: 11400000, guid: 6754cd32fe53b4b42a1b5d938fda0bd0, type: 2}
+  GlobalPromptConfiguration: {fileID: 11400000, guid: 2f65f9846333f1945948b8e1ca2c739c, type: 2}
   DefaultModePromptConfiguration: {fileID: 11400000, guid: 583a6d9d73e65774b9e48a52a514013e, type: 2}
   ModePromptConfigurations:
   - {fileID: 11400000, guid: 5e94ae9164db748439fa03b746eefdb6, type: 2}
   - {fileID: 11400000, guid: 339092070c704cb4fa61637fd4199b30, type: 2}
-  - {fileID: 11400000, guid: e5e90d1f93f10d14db132822f6c24fff, type: 2}
+  - {fileID: 11400000, guid: 43a756f4d5a81934bbd72f2fbccfee13, type: 2}
   WakeWordHostIpAddress: 127.0.0.1
   WakeWordHostPort: 17777
   DiscordSidecarBaseUrlAndPort: http://127.0.0.1:5099
@@ -29,7 +29,7 @@ MonoBehaviour:
   ConversationHistoryFileName: query_handler_history.json
   AzureTtsRegion: eastus
   AzureTtsVoiceName: en-US-PhoebeMultilingualNeural
-  ElevenLabsTtsVoiceId: gJx1vCzNCD1EQHT212Ls
+  ElevenLabsTtsVoiceId: 4tRn1lSkEn13EVTuqb0g
   ElevenLabsTtsModelId: eleven_flash_v2_5
   OpenRouterBaseUrl: https://openrouter.ai/api/v1/chat/completions
   LlmModelStandard: {fileID: 11400000, guid: 8e2a6b1ba1a193e4a8b6dfe340830b4b, type: 2}

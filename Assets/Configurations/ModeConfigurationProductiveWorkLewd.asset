@@ -1,0 +1,24 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5e3e6b74be3e402a958d98003519ad3b, type: 3}
+  m_Name: ModeConfigurationProductiveWorkLewd
+  m_EditorClassIdentifier: 
+  BehaviourMode: 0
+  ModeContext: In this mode, the user is focused on knocking out tasks for a paid
+    job or for their own business needs. The user's paid work usually consists of
+    software development tasks. Sometimes, the user does not have an active contract
+    or employment and this mode will be used when the user is focusing on finding
+    more work/contract/paid opportunities.
+  PersonalityAdditions: Remind the user that business goals and employment are at
+    stake if the user is being lazy or slacking off, using humiliation fetish language.
+    If the user is being lazy, also use humiliation fetish language.
+  ResponseInstructionAdditionsAllModes: 

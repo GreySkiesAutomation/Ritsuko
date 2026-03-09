@@ -49,6 +49,7 @@ namespace Runtime
         [FormerlySerializedAs("_constants")]
         [SerializeField]
         private Configuration.Configuration _configuration;
+
         public Configuration.Configuration Configuration => _configuration;
 
         private PromptBuilder _promptBuilder;
@@ -62,7 +63,7 @@ namespace Runtime
 
         private void Start()
         {
-            if(_instance != null)
+            if (_instance != null)
             {
                 LogError("Multiple instances of GlobalManager detected. There should only be one GlobalManager in the scene.");
                 Destroy(gameObject);
@@ -88,13 +89,16 @@ namespace Runtime
 
         private void InitializeCursor()
         {
+#if UNITY_EDITOR
+#else
             Cursor.visible = false;
             Cursor.lockState = CursorLockMode.Locked;
+#endif
         }
 
         private void LoadOrCreateGlobalState()
         {
-            if(PlayerPrefs.HasKey(GLOBAL_STATE_PLAYER_PREFS_KEY))
+            if (PlayerPrefs.HasKey(GLOBAL_STATE_PLAYER_PREFS_KEY))
             {
                 var json = PlayerPrefs.GetString(GLOBAL_STATE_PLAYER_PREFS_KEY);
                 var loadedState = JsonConvert.DeserializeObject<GlobalState>(json);
@@ -128,7 +132,7 @@ namespace Runtime
         {
             HandleEscapeKey();
 
-            if(_stateIsDirty)
+            if (_stateIsDirty)
             {
                 SaveGlobalState();
             }
@@ -136,25 +140,25 @@ namespace Runtime
 
         private void HandleEscapeKey()
         {
-            if(Input.GetKeyDown(KeyCode.Escape))
+            if (Input.GetKeyDown(KeyCode.Escape))
             {
                 _escapeKeyIsHeld = true;
                 _escapeKeyHeldTimeSeconds = 0f;
             }
 
-            if(_escapeKeyIsHeld)
+            if (_escapeKeyIsHeld)
             {
                 _escapeKeyHeldTimeSeconds += Time.deltaTime;
 
-                if(_escapeKeyHeldTimeSeconds >= _quitHoldDurationSeconds)
+                if (_escapeKeyHeldTimeSeconds >= _quitHoldDurationSeconds)
                 {
                     QuitApplication();
                 }
             }
 
-            if(Input.GetKeyUp(KeyCode.Escape))
+            if (Input.GetKeyUp(KeyCode.Escape))
             {
-                if(_escapeKeyHeldTimeSeconds < _quitHoldDurationSeconds)
+                if (_escapeKeyHeldTimeSeconds < _quitHoldDurationSeconds)
                 {
                     ReloadScene();
                 }
