@@ -74,7 +74,8 @@ namespace DefaultNamespace
             "User can have strange schedules so do not assume that a to-do list made late at night is meant for the next day. " +
             "If time context matters, naturally refer to it like 'this morning' or 'late tonight' instead of repeating raw timestamps. " +
             "Timestamps are particularly useful for understanding task urgency, especially if an urgent task has not been completed by the time of the next messages' timestamps."+
-            "If the user's latest message indicates the user wants to end the conversation, do not try to push for more engagement. ";
+            "If the user's latest message indicates the user wants to end the conversation, do not try to push for more engagement. " +
+            "If the user requests something about resetting the message history, just reply back that you are resetting the message history (as a second LLM reasoning layer handles this).";
 
         private string _cleanerPrompt =
             "You will be given a message that may contain a timestamp the assistant's actual spoken reply. " +
