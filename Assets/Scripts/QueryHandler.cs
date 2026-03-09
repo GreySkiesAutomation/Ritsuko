@@ -125,6 +125,7 @@ namespace DefaultNamespace
         [SerializeField] private bool _includeSystemPrompt = true;
         [SerializeField] private int _maxRetainedConversationMessages = 100;
         [SerializeField] private int _maxJsonParseAttempts = 5;
+        [SerializeField] private bool _auditHistoryToDiscord = true;
 
         [Header("Time")]
         [SerializeField] private string _timeZoneId = "Central Standard Time";
@@ -205,7 +206,7 @@ namespace DefaultNamespace
                 }
 
                 SendResponseToSource(
-                    structuredAssistantResponse.reply,
+                    structuredAssistantResponse.reply, messageContent,
                     source,
                     !string.Equals(structuredAssistantResponse.conversationState, "END", StringComparison.OrdinalIgnoreCase));
 
@@ -220,7 +221,7 @@ namespace DefaultNamespace
             }
         }
 
-        private void SendResponseToSource(string cleanedResponse, QuerySource source, bool promptAfterwards)
+        private void SendResponseToSource(string cleanedResponse, string originalQuery, QuerySource source, bool promptAfterwards)
         {
             if (source == QuerySource.Discord)
             {
@@ -229,6 +230,12 @@ namespace DefaultNamespace
             else if (source == QuerySource.Microphone)
             {
                 _speakAndEmoteController.SendPhraseAndGetEmotion(cleanedResponse, promptAfterwards);
+                
+                if(_auditHistoryToDiscord)
+                {
+                    var auditMessage = $"Spoken query from user:\"{originalQuery}\"\nSpoken response sent to user: \"{cleanedResponse}\"";
+                    _discordClient.SendDirectMessage(auditMessage);
+                }
             }
         }
 
