@@ -233,7 +233,7 @@ namespace DefaultNamespace
                 
                 if(_auditHistoryToDiscord)
                 {
-                    var auditMessage = $"Spoken query from user:\"{originalQuery}\"\nSpoken response sent to user: \"{cleanedResponse}\"";
+                    var auditMessage = $"**Spoken query from user:** \"{originalQuery}\"\n\n**Spoken response sent to user:** \"{cleanedResponse}\"";
                     _discordClient.SendDirectMessage(auditMessage);
                 }
             }
