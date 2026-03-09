@@ -4805,7 +4805,7 @@ MonoBehaviour:
   _selectedMicrophoneDeviceName: Microphone (Wireless microphone)
   _microphoneLoopLengthSeconds: 300
   _recordingSampleRate: 16000
-  _speechAmplitudeThreshold: 0.01
+  _speechAmplitudeThreshold: 0.06
   _speechEndTimeoutSeconds: 3
   _amplitudeSampleWindowSizePerChannel: 1024
   _logMicrophoneEvents: 1
