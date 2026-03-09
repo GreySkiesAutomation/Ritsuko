@@ -270,12 +270,10 @@ namespace DefaultNamespace
             }
             catch (TimeZoneNotFoundException)
             {
-                Debug.LogWarning("[QueryHandler] Time zone not found: " + _timeZoneId + ". Falling back to local system time.");
                 return utcDateTime.ToLocalTime();
             }
             catch (InvalidTimeZoneException)
             {
-                Debug.LogWarning("[QueryHandler] Invalid time zone: " + _timeZoneId + ". Falling back to local system time.");
                 return utcDateTime.ToLocalTime();
             }
         }
