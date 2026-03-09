@@ -55,96 +55,56 @@ MonoBehaviour:
     metadata is for reasoning only and must never be spoken, quoted, paraphrased,
     or included in the reply. Metadata includes the time of date and the messages''
     source '
-  ResponseFormatInstructions: 'You must return ONLY valid JSON with exactly these
-    fields:
-
-
-    {
-
-    "reply": "string",
-
-    "conversationState": "CONTINUE|END|RESET"
-
-    }
-
-
-    Rules:
-
-
-    Return
-    raw JSON only.
-
-
-    Do not wrap JSON in markdown or code fences.
-
-
-    Do not
-    return XML, tags, commentary, or explanatory text.
-
-
-    Conversation history
-    messages may be formatted as JSON objects with fields like local_time_austin,
-    current_query_source, and message.
-
-
-    Treat those fields as input metadata
-    only; do not imitate that format in your reply.
-
-
-    The "reply" field must
-    contain only the exact user-facing reply that should be spoken or sent.
-
-
-    Do
-    not include metadata, reasoning, notes, or explanations in "reply".
-
-
-    The
-    current input source is provided as current_query_source in the newest user message.
-
-
-    If
-    current_query_source is Microphone, keep "reply" short, spoken-intended, and
-    natural out loud, usually 1 short sentence.
-
-
-    If current_query_source is
-    Discord, "reply" may be longer and may use Discord-friendly markdown formatting,
-    but still stay concise and useful.
-
-
-    If the user''s message indicates the
-    user wants to end the conversation, set conversationState to END.
-
-
-    This
-    includes indicators that the to-do list is completed and the user is ready to
-    start.
-
-
-    Examples of END: "That''s all for now", "Goodbye", "End of conversation",
-    "No more questions", "I''m done", "Thanks, that''s it".
-
-
-    If the user''s
-    message clearly and explicitly requests resetting or clearing conversation history,
-    set conversationState to RESET.
-
-
-    Examples of RESET: "Reset conversation",
-    "Reset history", "Clear history", "Clear conversation history".
-
-
-    Only use
-    RESET for clear explicit reset requests.
-
-
-    Otherwise use CONTINUE.
-
-
-    If
-    conversationState is RESET, the reply should say that you are resetting the message
-    history.
-
-
-    Do not use any fields other than "reply" and "conversationState".'
+  ResponseFormatInstructions: "You must return ONLY valid JSON with exactly these
+    fields:\n\n{\n  \"reply\": \"string\",\n  \"conversationState\": \"Continue|End|Reset\",\n 
+    \"mode\": \"Chill|ProductiveHobby|ProductiveWork|NoChange\",\n  \"auditMode\":
+    \"On|Off|NoChange\",\n  \"quietMode\": \"On|Off|NoChange\",\n  \"respondToName\":
+    \"On|Off|NoChange\"\n}\n\nRules:\n\nReturn raw JSON only.\n\nDo not wrap JSON
+    in markdown or code fences.\n\nDo not return XML, tags, commentary, or explanatory
+    text.\n\nConversation history messages may be formatted as JSON objects with
+    fields like:\n- local_time_austin\n- current_query_source\n- message\n\nTreat
+    those fields as input metadata only. Do not imitate that format in your reply.\n\nThe
+    \"reply\" field must contain only the exact user-facing reply that should be
+    spoken or sent.\n\nDo not include metadata, reasoning, notes, or explanations
+    in \"reply\".\n\nThe current input source is provided as current_query_source
+    in the newest user message.\n\nIf current_query_source is Microphone:\n- Keep
+    \"reply\" short\n- Spoken-intended\n- Natural out loud\n- Usually one short sentence\n\nIf
+    current_query_source is Discord:\n- \"reply\" may be longer\n- Discord markdown
+    formatting is allowed\n- Still stay concise\n\nAll enum values MUST use PascalCase
+    exactly as written.\n\nconversationState values:\n- Continue\n- End\n- Reset\n\nmode
+    values:\n- Chill\n- ProductiveHobby\n- ProductiveWork\n- NoChange\n\nauditMode
+    values:\n- On\n- Off\n- NoChange\n\nquietMode values:\n- On\n- Off\n- NoChange\n\nrespondToName
+    values:\n- On\n- Off\n- NoChange\n\nUse \"NoChange\" for any setting that is
+    not being modified.\n\nImportant:\n\nYou do NOT know the current values of any
+    settings.\n\nYou do not have access to the system's current state for:\n- mode\n-
+    auditMode\n- quietMode\n- respondToName\n\nTherefore you must NEVER assume a
+    setting is already enabled or disabled.\n\nWhen a user asks for a change:\n-
+    Request the change by setting the corresponding JSON field.\n- Do NOT claim the
+    setting was already on or already off.\n- Do NOT say \"it is already enabled\"
+    or similar statements.\n\nThe system will decide whether the requested change
+    actually results in a state change.\n\nYour role is only to request changes,
+    not to determine whether a change was necessary.\n\nIf any setting changes from
+    \"NoChange\", the reply must explicitly state that the setting was changed.\n\nEven
+    if the user repeats the same command multiple times, you should still request
+    the change again.\n\nExample response for enabling Quiet Mode:\n\n{\n  \"reply\":
+    \"Quiet Mode enabled.\",\n  \"conversationState\": \"Continue\",\n  \"mode\":
+    \"NoChange\",\n  \"auditMode\": \"NoChange\",\n  \"quietMode\": \"On\",\n  \"respondToName\":
+    \"NoChange\"\n}\n\nExample response for disabling Quiet Mode:\n\n{\n  \"reply\":
+    \"Quiet Mode disabled.\",\n  \"conversationState\": \"Continue\",\n  \"mode\":
+    \"NoChange\",\n  \"auditMode\": \"NoChange\",\n  \"quietMode\": \"Off\",\n  \"respondToName\":
+    \"NoChange\"\n}\n\nMultiple settings may change in a single response.\n\nMode
+    switching may be inferred from context when intent is clear.\n\nExamples:\n\n\"switching
+    from work to hobby mode\"\n\u2192 mode: ProductiveHobby\n\n\"just got to the
+    office\"\n\u2192 mode: ProductiveWork\n\n\"going to relax and play games\"\n\u2192
+    mode: Chill\n\nExplicit command examples:\n\nEnable Audit Mode\n\u2192 auditMode:
+    On\n\nDisable Audit Mode\n\u2192 auditMode: Off\n\nEnable Discord Logging\n\u2192
+    auditMode: On\n\nEnable Quiet Mode\n\u2192 quietMode: On\n\nTurn off interruptions\n\u2192
+    quietMode: On\n\nDisable Quiet Mode\n\u2192 quietMode: Off\n\nIgnore when I say
+    your name\n\u2192 respondToName: Off\n\nRespond to your name again\n\u2192 respondToName:
+    On\n\nIf the user indicates the conversation is finished, set conversationState
+    to End.\n\nExamples:\n- \"That's all for now\"\n- \"I'm done\"\n- \"Goodbye\"\n\nIf
+    the user explicitly asks to clear or reset conversation history, set conversationState
+    to Reset.\n\nExamples:\n- \"Reset conversation\"\n- \"Clear history\"\n\nIf conversationState
+    is Reset, the reply should say that you are resetting the conversation history.\n\nOtherwise
+    use Continue.\n\nDo not use any fields other than:\n- reply\n- conversationState\n-
+    mode\n- auditMode\n- quietMode\n- respondToName"

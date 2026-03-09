@@ -27,7 +27,6 @@ namespace Configuration
         [Header("Query Handler")]
         public int MaxRetainedConversationMessages = 100;
         public int MaxJsonParseRetries = 5;
-        public bool AuditHistoryToDiscord = true;
         public string ConversationHistoryFileName = "query_handler_history.json";
         
         [Header("Azure TTS")]

@@ -167,7 +167,10 @@ namespace Runtime.Inputs.SpeechToText
                 {
                     Log("[WakeWordSidecarClient] Wake word detected from sidecar at unix time: " + sidecarMessage.timestampUnixSeconds);
 
-                    OnWakeWordTriggered();
+                    if (GlobalManager.I.State.RespondToNameEnabled)
+                    {
+                        OnWakeWordTriggered();
+                    }
                 });
             }
             else
