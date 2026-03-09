@@ -1,5 +1,5 @@
-
 using System;
+using System.Collections.Generic;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
@@ -10,6 +10,23 @@ using UnityEngine;
 
 public class OpenRouterChatClient : MonoBehaviour
 {
+    [Serializable]
+    public class ChatMessage
+    {
+        public string role;
+        public string content;
+
+        public ChatMessage()
+        {
+        }
+
+        public ChatMessage(string role, string content)
+        {
+            this.role = role;
+            this.content = content;
+        }
+    }
+
     [SerializeField] private string _model = "openai/gpt-4o-mini";
     [SerializeField] private string _baseUrl = "https://openrouter.ai/api/v1/chat/completions";
 
@@ -40,7 +57,20 @@ public class OpenRouterChatClient : MonoBehaviour
         }
     }
 
-    public async Task<string> SendPromptAsync(string prompt)
+    public Task<string> SendPromptAsync(string prompt)
+    {
+        if (string.IsNullOrWhiteSpace(prompt))
+        {
+            throw new ArgumentException("Prompt is null or whitespace.", nameof(prompt));
+        }
+
+        return SendPromptAsync(new List<ChatMessage>()
+        {
+            new ChatMessage("user", prompt)
+        });
+    }
+
+    public async Task<string> SendPromptAsync(IReadOnlyList<ChatMessage> messageHistory)
     {
         if (string.IsNullOrWhiteSpace(Secrets.OPEN_ROUTER_API_KEY))
         {
@@ -52,27 +82,40 @@ public class OpenRouterChatClient : MonoBehaviour
             throw new Exception("Model is empty.");
         }
 
+        if (messageHistory == null || messageHistory.Count == 0)
+        {
+            throw new Exception("Message history is empty.");
+        }
+
         EnsureHttpClientCreated();
 
         CancelActiveRequest();
         _activeRequestCancellationTokenSource = new CancellationTokenSource();
+
+        var copiedMessages = new ChatMessage[messageHistory.Count];
+
+        for (var i = 0; i < messageHistory.Count; i++)
+        {
+            var sourceMessage = messageHistory[i];
+
+            if (sourceMessage == null)
+            {
+                throw new Exception("Message history contains a null message at index " + i + ".");
+            }
+
+            copiedMessages[i] = new ChatMessage(sourceMessage.role, sourceMessage.content);
+        }
 
         var requestBody = new ChatCompletionsRequest
         {
             model = _model,
             temperature = _temperature,
             max_tokens = _maxTokens,
-            messages = new ChatMessage[]
-            {
-                new ChatMessage
-                {
-                    role = "user",
-                    content = prompt
-                }
-            }
+            messages = copiedMessages
         };
 
         var json = JsonConvert.SerializeObject(requestBody);
+
         var httpRequest = new HttpRequestMessage(HttpMethod.Post, _baseUrl);
         httpRequest.Headers.Authorization = new AuthenticationHeaderValue("Bearer", Secrets.OPEN_ROUTER_API_KEY);
 
@@ -123,7 +166,11 @@ public class OpenRouterChatClient : MonoBehaviour
 
         var parsed = JsonConvert.DeserializeObject<ChatCompletionsResponse>(responseText);
 
-        if (parsed == null || parsed.choices == null || parsed.choices.Length == 0 || parsed.choices[0] == null || parsed.choices[0].message == null)
+        if (parsed == null ||
+            parsed.choices == null ||
+            parsed.choices.Length == 0 ||
+            parsed.choices[0] == null ||
+            parsed.choices[0].message == null)
         {
             throw new Exception("OpenRouter response missing choices/message.\n" + responseText);
         }
@@ -152,13 +199,6 @@ public class OpenRouterChatClient : MonoBehaviour
     }
 
     [Serializable]
-    private class ChatMessage
-    {
-        public string role;
-        public string content;
-    }
-
-    [Serializable]
     private class ChatCompletionsResponse
     {
         public Choice[] choices;
@@ -170,4 +210,3 @@ public class OpenRouterChatClient : MonoBehaviour
         public ChatMessage message;
     }
 }
-

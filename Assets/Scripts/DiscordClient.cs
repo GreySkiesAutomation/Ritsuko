@@ -14,8 +14,9 @@ public class DiscordClient : MonoBehaviour
 {
     private const string BaseUrl = "http://127.0.0.1:5099";
 
+    [FormerlySerializedAs("_inputRouter")]
     [Header("Dependencies")]
-    [SerializeField] private InputRouter _inputRouter;
+    [SerializeField] private QueryHandler _queryHandler;
 
     [Header("Testing UI")]
     [SerializeField] private string _testMessageInputField;
@@ -108,9 +109,9 @@ public class DiscordClient : MonoBehaviour
             {
                 Debug.Log($"[DiscordClient] DM from {message.username}: {message.messageText}");
 
-                if (_inputRouter != null)
+                if (_queryHandler != null)
                 {
-                    _inputRouter.HandleNewMessage(message.messageText);
+                    _queryHandler.HandleNewMessage(message.messageText);
                 }
                 else
                 {
