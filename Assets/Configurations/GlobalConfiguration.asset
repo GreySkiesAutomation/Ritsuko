@@ -1,0 +1,45 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 58e7bbfa702a4addb57b2b2284f0ae27, type: 3}
+  m_Name: GlobalConfiguration
+  m_EditorClassIdentifier: 
+  GlobalPromptConfiguration: {fileID: 11400000, guid: 6754cd32fe53b4b42a1b5d938fda0bd0, type: 2}
+  DefaultModePromptConfiguration: {fileID: 11400000, guid: 583a6d9d73e65774b9e48a52a514013e, type: 2}
+  ModePromptConfigurations:
+  - {fileID: 11400000, guid: 5e94ae9164db748439fa03b746eefdb6, type: 2}
+  - {fileID: 11400000, guid: 339092070c704cb4fa61637fd4199b30, type: 2}
+  - {fileID: 11400000, guid: e5e90d1f93f10d14db132822f6c24fff, type: 2}
+  WakeWordHostIpAddress: 127.0.0.1
+  WakeWordHostPort: 17777
+  DiscordSidecarBaseUrlAndPort: http://127.0.0.1:5099
+  DiscordPollIntervalSeconds: 0.1
+  HeartbeatIntervalSeconds: 5
+  DelayToPromptSttSeconds: 0.5
+  MaxRetainedConversationMessages: 100
+  MaxJsonParseRetries: 5
+  AuditHistoryToDiscord: 1
+  ConversationHistoryFileName: query_handler_history.json
+  AzureTtsRegion: eastus
+  AzureTtsVoiceName: en-US-PhoebeMultilingualNeural
+  ElevenLabsTtsVoiceId: EXAVITQu4vr4xnSDxMaL
+  ElevenLabsTtsModelId: eleven_flash_v2_5
+  OpenRouterBaseUrl: https://openrouter.ai/api/v1/chat/completions
+  LlmModelStandard: {fileID: 11400000, guid: 8e2a6b1ba1a193e4a8b6dfe340830b4b, type: 2}
+  LlmModelHighReasoning: {fileID: 11400000, guid: 9a770b2bc5860a44d87a5f34dff16535, type: 2}
+  LlmModelFast: {fileID: 11400000, guid: 9db40f3ccb1cff04a82be2ef7e947637, type: 2}
+  SttModelName: gpt-4o-transcribe
+  SttPrerollSeconds: 0.5
+  MicrophoneLoopLengthSeconds: 300
+  RecordingSampleRate: 16000
+  SpeechAmplitudeThreshold: 0.06
+  SpeechEndDetectionSeconds: 5
+  AmplitudeSampleWindowSizePerChannel: 1024

@@ -1,0 +1,22 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5e3e6b74be3e402a958d98003519ad3b, type: 3}
+  m_Name: ModeConfigurationChill
+  m_EditorClassIdentifier: 
+  BehaviourMode: 2
+  ModeContext: The user is currently off-hours right now and is not meant to do tasks
+    right now, so do not press the user to complete tasks. If the conversation context
+    is about to-do list, treat the items as for the next time the user intends to
+    be productive.
+  PersonalityAdditions: Relaxed, like a coworker you are friendly with that you are
+    talking to off hours. Is not urgent.
+  ResponseInstructionAdditionsAllModes: 
