@@ -240,19 +240,19 @@
     ]
   },
   "packageFolders": {
-    "C:\\Users\\riko\\.nuget\\packages\\": {}
+    "/Users/ritsuko/.nuget/packages/": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\Pearl\\RitsukoChan\\SideCar\\DiscordBot\\DiscordBot.csproj",
+      "projectUniqueName": "/Users/ritsuko/UnityProjects/Ritsuko/SideCar/DiscordBot/DiscordBot.csproj",
       "projectName": "DiscordBot",
-      "projectPath": "C:\\Users\\Pearl\\RitsukoChan\\SideCar\\DiscordBot\\DiscordBot.csproj",
-      "packagesPath": "C:\\Users\\riko\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\Pearl\\RitsukoChan\\SideCar\\DiscordBot\\obj\\",
+      "projectPath": "/Users/ritsuko/UnityProjects/Ritsuko/SideCar/DiscordBot/DiscordBot.csproj",
+      "packagesPath": "/Users/ritsuko/.nuget/packages/",
+      "outputPath": "/Users/ritsuko/UnityProjects/Ritsuko/SideCar/DiscordBot/obj/",
       "projectStyle": "PackageReference",
       "configFilePaths": [
-        "C:\\Users\\riko\\AppData\\Roaming\\NuGet\\NuGet.Config"
+        "/Users/ritsuko/.nuget/NuGet/NuGet.Config"
       ],
       "originalTargetFrameworks": [
         "net9.0"
@@ -276,7 +276,7 @@
         "auditLevel": "low",
         "auditMode": "direct"
       },
-      "SdkAnalysisLevel": "10.0.100"
+      "SdkAnalysisLevel": "9.0.300"
     },
     "frameworks": {
       "net9.0": {
@@ -306,7 +306,7 @@
             "privateAssets": "all"
           }
         },
-        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.103/PortableRuntimeIdentifierGraph.json"
+        "runtimeIdentifierGraphPath": "/usr/local/share/dotnet/sdk/9.0.311/PortableRuntimeIdentifierGraph.json"
       }
     }
   }
