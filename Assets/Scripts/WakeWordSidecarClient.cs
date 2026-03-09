@@ -16,7 +16,8 @@ public class WakeWordSidecarClient : MonoBehaviour
     [SerializeField] private int _port = 17777;
     [SerializeField] private bool _connectOnStart = true;
     [SerializeField] private GameObject _wakeWordDebugIndicator;
-
+    [SerializeField] private MicrophoneInputController _microphoneInputController;
+    
     private TcpClient _tcpClient;
     private Thread _readerThread;
     private volatile bool _isRunning;
@@ -172,8 +173,9 @@ public class WakeWordSidecarClient : MonoBehaviour
     {
         OnWakeWordTriggered();
     }
-    private void OnWakeWordTriggered()
+    public void OnWakeWordTriggered()
     {
+        _microphoneInputController.SetSpeechActivityStateToActive();
         OnWakeWordTriggeredEvent?.Invoke();
         if(_currentWakeWordDebugIndicatorCoroutine != null)
         {

@@ -11,242 +11,140 @@ using UnityEngine.Networking;
 
 public class OpenAISpeechToText : MonoBehaviour
 {
+    [Header("References")]
+    [SerializeField] private MicrophoneInputController _microphoneInputController;
+    [SerializeField] private QueryHandler _queryHandler;
+
     [Header("OpenAI")]
     private string _openAIApiKey => Secrets.OpenAIApiKey;
     [SerializeField] private string _transcriptionModelName = "gpt-4o-transcribe";
 
-    [Header("Microphone")]
-    [SerializeField] private bool _useDefaultMicrophoneDevice = true;
-
-    [ShowIf(nameof(ShouldShowSelectedMicrophoneDropdown))]
-    [Dropdown(nameof(GetAvailableMicrophoneDeviceDropdown))]
-    [SerializeField] private string _selectedMicrophoneDeviceName;
-
-    [SerializeField] private int _recordingLengthSeconds = 120;
-    [SerializeField] private int _recordingSampleRate = 16000;
-
-    [Header("Output")]
-    [SerializeField] private QueryHandler _queryHandler;
+    [Header("Listening")]
+    [SerializeField] private GameObject _isListeningIndicator;
+    [SerializeField] private float _preRollSeconds = 0.15f;
 
     [Header("Debug")]
     [SerializeField] private bool _logVerboseResponse = true;
-    [SerializeField] private GameObject _isListeningIndicator;
-    
-    private AudioClip _activeRecordingAudioClip;
-    private string[] _availableMicrophoneDeviceNames = Array.Empty<string>();
-    private string _activeMicrophoneDeviceName;
-    private bool _isListening;
-
-    [Button("Refresh Microphone List")]
-    private void RefreshMicrophoneList()
-    {
-        CacheAvailableMicrophoneDeviceNames();
-        Debug.Log("[OpenAIMicrophoneTranscriptionTester] Refreshed microphone list. Found " + _availableMicrophoneDeviceNames.Length + " microphone(s).");
-
-        for (var microphoneIndex = 0; microphoneIndex < _availableMicrophoneDeviceNames.Length; microphoneIndex++)
-        {
-            Debug.Log("[OpenAIMicrophoneTranscriptionTester] Microphone " + microphoneIndex + ": " + _availableMicrophoneDeviceNames[microphoneIndex]);
-        }
-    }
+    [SerializeField] [ReadOnly] private bool _isListening;
+    [SerializeField] [ReadOnly] private bool _isTranscriptionInProgress;
+    [SerializeField] [ReadOnly] private long _captureStartSampleValueIndex;
+    [SerializeField] [ReadOnly] private long _captureEndSampleValueIndex;
 
     [Button("StartListening")]
     public void StartListening()
     {
         if (_isListening)
         {
-            Debug.LogWarning("[OpenAIMicrophoneTranscriptionTester] Already listening.");
+            Debug.LogWarning("[OpenAISpeechToText] Already listening.");
             return;
         }
 
-        CacheAvailableMicrophoneDeviceNames();
-
-        var microphoneDeviceNameToUse = GetMicrophoneDeviceNameToUse();
-
-        if (!HasAnyMicrophoneDevices())
+        if (_isTranscriptionInProgress)
         {
-            Debug.LogError("[OpenAIMicrophoneTranscriptionTester] No microphone devices were found.");
+            Debug.LogWarning("[OpenAISpeechToText] Cannot start listening while transcription is in progress.");
             return;
         }
 
-        if (!_useDefaultMicrophoneDevice && string.IsNullOrWhiteSpace(microphoneDeviceNameToUse))
+        if (_microphoneInputController == null)
         {
-            Debug.LogError("[OpenAIMicrophoneTranscriptionTester] No microphone selected.");
+            Debug.LogError("[OpenAISpeechToText] MicrophoneInputController reference is missing.");
             return;
         }
 
-        _activeMicrophoneDeviceName = microphoneDeviceNameToUse;
-        _activeRecordingAudioClip = Microphone.Start(_activeMicrophoneDeviceName, false, _recordingLengthSeconds, _recordingSampleRate);
-
-        if (_activeRecordingAudioClip == null)
+        if (!_microphoneInputController.IsMicrophoneRunning)
         {
-            Debug.LogError("[OpenAIMicrophoneTranscriptionTester] Failed to start microphone recording.");
+            Debug.LogError("[OpenAISpeechToText] MicrophoneInputController is not running.");
             return;
         }
 
+        var preRollSampleValueCount = Mathf.RoundToInt(_preRollSeconds * _microphoneInputController.RecordingSampleRate * _microphoneInputController.ChannelCount);
+        _captureStartSampleValueIndex = Math.Max(0, _microphoneInputController.TotalSampleValuesCaptured - preRollSampleValueCount);
+        _captureEndSampleValueIndex = _captureStartSampleValueIndex;
         _isListening = true;
-        
+
         _isListeningIndicator?.SetActive(true);
 
-        var microphoneLabel = string.IsNullOrWhiteSpace(_activeMicrophoneDeviceName) ? "<default microphone>" : _activeMicrophoneDeviceName;
-        Debug.Log("[OpenAIMicrophoneTranscriptionTester] Started listening on microphone: " + microphoneLabel);
+        Debug.Log("[OpenAISpeechToText] Listening started.");
     }
 
+    public void Update()
+    {
+        if (_isListening && _microphoneInputController.CurrentSpeechActivityState == MicrophoneInputController.SpeechActivityState.Inactive)
+        {
+            StopListeningAndSend();
+        }
+    }
+    
     [Button("StopListeningAndSend")]
     public void StopListeningAndSend()
     {
         if (!_isListening)
         {
-            Debug.LogWarning("[OpenAIMicrophoneTranscriptionTester] Not currently listening.");
+            Debug.LogWarning("[OpenAISpeechToText] Not currently listening.");
             return;
         }
 
-        if (_activeRecordingAudioClip == null)
+        if (_microphoneInputController == null)
         {
-            Debug.LogError("[OpenAIMicrophoneTranscriptionTester] Active recording clip is null.");
+            Debug.LogError("[OpenAISpeechToText] MicrophoneInputController reference is missing.");
             CleanupListeningState();
             return;
         }
 
-        var currentSamplePosition = Microphone.GetPosition(_activeMicrophoneDeviceName);
+        _captureEndSampleValueIndex = _microphoneInputController.TotalSampleValuesCaptured;
+        var trimmedAudioClip = _microphoneInputController.CreateAudioClipFromRecentSampleValues(
+            _captureStartSampleValueIndex,
+            _captureEndSampleValueIndex,
+            "microphone_recording");
 
-        if (currentSamplePosition < 0)
-        {
-            Debug.LogError("[OpenAIMicrophoneTranscriptionTester] Failed to get microphone position.");
-            CleanupListeningState();
-            return;
-        }
-
-        Microphone.End(_activeMicrophoneDeviceName);
-        _isListening = false;
-        
-        _isListeningIndicator?.SetActive(false);
-
-
-        if (currentSamplePosition == 0)
-        {
-            Debug.LogWarning("[OpenAIMicrophoneTranscriptionTester] Recording contained 0 samples.");
-            CleanupListeningState();
-            return;
-        }
-
-        var trimmedAudioClip = CreateTrimmedAudioClip(_activeRecordingAudioClip, currentSamplePosition);
+        CleanupListeningState();
 
         if (trimmedAudioClip == null)
         {
-            Debug.LogError("[OpenAIMicrophoneTranscriptionTester] Failed to trim recorded audio clip.");
-            CleanupListeningState();
+            Debug.LogWarning("[OpenAISpeechToText] No trimmed audio clip was created.");
             return;
         }
 
         StartCoroutine(TranscribeAudioClipCoroutine(trimmedAudioClip, "microphone_recording.wav"));
-        CleanupListeningState();
+    }
+
+    private void Reset()
+    {
+        if (_microphoneInputController == null)
+        {
+            _microphoneInputController = GetComponent<MicrophoneInputController>();
+        }
     }
 
     private void Awake()
     {
-        CacheAvailableMicrophoneDeviceNames();
-    }
-
-    private void OnValidate()
-    {
-        CacheAvailableMicrophoneDeviceNames();
-    }
-
-    private bool ShouldShowSelectedMicrophoneDropdown()
-    {
-        return !_useDefaultMicrophoneDevice;
-    }
-
-    private DropdownList<string> GetAvailableMicrophoneDeviceDropdown()
-    {
-        CacheAvailableMicrophoneDeviceNames();
-
-        var dropdown = new DropdownList<string>();
-
-        if (_availableMicrophoneDeviceNames == null || _availableMicrophoneDeviceNames.Length == 0)
+        if (_microphoneInputController == null)
         {
-            dropdown.Add("<No microphones found>", "");
-            return dropdown;
+            _microphoneInputController = GetComponent<MicrophoneInputController>();
         }
-
-        for (var microphoneIndex = 0; microphoneIndex < _availableMicrophoneDeviceNames.Length; microphoneIndex++)
-        {
-            var microphoneDeviceName = _availableMicrophoneDeviceNames[microphoneIndex];
-            dropdown.Add(microphoneDeviceName, microphoneDeviceName);
-        }
-
-        return dropdown;
-    }
-
-    private void CacheAvailableMicrophoneDeviceNames()
-    {
-        _availableMicrophoneDeviceNames = Microphone.devices ?? Array.Empty<string>();
-
-        if (string.IsNullOrWhiteSpace(_selectedMicrophoneDeviceName) && _availableMicrophoneDeviceNames.Length > 0)
-        {
-            _selectedMicrophoneDeviceName = _availableMicrophoneDeviceNames[0];
-        }
-
-        if (!string.IsNullOrWhiteSpace(_selectedMicrophoneDeviceName) && Array.IndexOf(_availableMicrophoneDeviceNames, _selectedMicrophoneDeviceName) < 0)
-        {
-            _selectedMicrophoneDeviceName = _availableMicrophoneDeviceNames.Length > 0 ? _availableMicrophoneDeviceNames[0] : "";
-        }
-    }
-
-    private bool HasAnyMicrophoneDevices()
-    {
-        return _availableMicrophoneDeviceNames != null && _availableMicrophoneDeviceNames.Length > 0;
-    }
-
-    private string GetMicrophoneDeviceNameToUse()
-    {
-        if (_useDefaultMicrophoneDevice)
-        {
-            return null;
-        }
-
-        return _selectedMicrophoneDeviceName;
-    }
-
-    private AudioClip CreateTrimmedAudioClip(AudioClip sourceAudioClip, int recordedSampleCountPerChannel)
-    {
-        if (sourceAudioClip == null)
-        {
-            return null;
-        }
-
-        var channelCount = sourceAudioClip.channels;
-        var frequency = sourceAudioClip.frequency;
-        var totalRecordedSampleValueCount = recordedSampleCountPerChannel * channelCount;
-
-        var sourceSampleData = new float[sourceAudioClip.samples * channelCount];
-        sourceAudioClip.GetData(sourceSampleData, 0);
-
-        var trimmedSampleData = new float[totalRecordedSampleValueCount];
-        Array.Copy(sourceSampleData, trimmedSampleData, totalRecordedSampleValueCount);
-
-        var trimmedAudioClip = AudioClip.Create(
-            sourceAudioClip.name + "_Trimmed",
-            recordedSampleCountPerChannel,
-            channelCount,
-            frequency,
-            false);
-
-        trimmedAudioClip.SetData(trimmedSampleData, 0);
-        return trimmedAudioClip;
     }
 
     private IEnumerator TranscribeAudioClipCoroutine(AudioClip audioClip, string fileName)
     {
+        if (_isTranscriptionInProgress)
+        {
+            Debug.LogWarning("[OpenAISpeechToText] Transcription is already in progress.");
+            yield break;
+        }
+
+        _isTranscriptionInProgress = true;
+
         if (string.IsNullOrWhiteSpace(_openAIApiKey))
         {
-            Debug.LogError("[OpenAIMicrophoneTranscriptionTester] OpenAI API key is missing.");
+            Debug.LogError("[OpenAISpeechToText] OpenAI API key is missing.");
+            _isTranscriptionInProgress = false;
             yield break;
         }
 
         if (audioClip == null)
         {
-            Debug.LogError("[OpenAIMicrophoneTranscriptionTester] AudioClip is null.");
+            Debug.LogError("[OpenAISpeechToText] AudioClip is null.");
+            _isTranscriptionInProgress = false;
             yield break;
         }
 
@@ -254,7 +152,8 @@ public class OpenAISpeechToText : MonoBehaviour
 
         if (wavBytes == null || wavBytes.Length == 0)
         {
-            Debug.LogError("[OpenAIMicrophoneTranscriptionTester] WAV conversion failed.");
+            Debug.LogError("[OpenAISpeechToText] WAV conversion failed.");
+            _isTranscriptionInProgress = false;
             yield break;
         }
 
@@ -270,8 +169,9 @@ public class OpenAISpeechToText : MonoBehaviour
 
             if (unityWebRequest.result != UnityWebRequest.Result.Success)
             {
-                Debug.LogError("[OpenAIMicrophoneTranscriptionTester] Transcription request failed: " + unityWebRequest.error);
-                Debug.LogError("[OpenAIMicrophoneTranscriptionTester] Response body: " + unityWebRequest.downloadHandler.text);
+                Debug.LogError("[OpenAISpeechToText] Transcription request failed: " + unityWebRequest.error);
+                Debug.LogError("[OpenAISpeechToText] Response body: " + unityWebRequest.downloadHandler.text);
+                _isTranscriptionInProgress = false;
                 yield break;
             }
 
@@ -279,23 +179,26 @@ public class OpenAISpeechToText : MonoBehaviour
 
             if (_logVerboseResponse)
             {
-                Debug.Log("[OpenAIMicrophoneTranscriptionTester] Raw transcription response: " + rawResponseText);
+                Debug.Log("[OpenAISpeechToText] Raw transcription response: " + rawResponseText);
             }
 
             var transcriptionResponse = JsonUtility.FromJson<OpenAITranscriptionResponse>(rawResponseText);
 
             if (transcriptionResponse == null)
             {
-                Debug.LogError("[OpenAIMicrophoneTranscriptionTester] Failed to parse transcription response.");
+                Debug.LogError("[OpenAISpeechToText] Failed to parse transcription response.");
+                _isTranscriptionInProgress = false;
                 yield break;
             }
             else
             {
-                _queryHandler.HandleNewMessage(transcriptionResponse.text);
+                _queryHandler.HandleNewMessage(transcriptionResponse.text, QuerySource.Microphone);
             }
 
-            Debug.Log("[OpenAIMicrophoneTranscriptionTester] Transcript: " + transcriptionResponse.text);
+            Debug.Log("[OpenAISpeechToText] Transcript: " + transcriptionResponse.text);
         }
+
+        _isTranscriptionInProgress = false;
     }
 
     private byte[] ConvertAudioClipToWavBytes(AudioClip audioClip)
@@ -360,9 +263,10 @@ public class OpenAISpeechToText : MonoBehaviour
 
     private void CleanupListeningState()
     {
-        _activeRecordingAudioClip = null;
-        _activeMicrophoneDeviceName = null;
         _isListening = false;
+        _captureStartSampleValueIndex = 0;
+        _captureEndSampleValueIndex = 0;
+        _isListeningIndicator?.SetActive(false);
     }
 
     [Serializable]

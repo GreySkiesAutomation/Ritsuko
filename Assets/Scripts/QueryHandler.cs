@@ -54,12 +54,14 @@ namespace DefaultNamespace
         [SerializeField] private OpenRouterChatClient _llmClient;
         [SerializeField] private DiscordClient _discordClient;
 
-        [Header("Behavior")]
         /*[TextArea(6, 14)]
-        [SerializeField]*/ private string _systemPrompt =
+        [SerializeField]*/
+        private string _systemPrompt =
             "You are a personal assistant focused on the user's productivity, motivation, and attention. " +
+            "You have a personality that is playful and supportive by default, condescending and punitive when the user gets off track for unprofessional reasons, but caring if the user says they are genuinely stressed." +
             "Reply in 1 short sentence. Be direct, helpful, and action-oriented. " +
-            "All timestamps in the conversation history are Austin, Texas local time. " +
+            "If the task is to create a to do list, do not ask for an explicit number of items and do not suggest any items for the to-do list- the user is planning to give tasks they have already decided. " +
+            "All timestamps in the conversation history are local time. " +
             "You may use time-of-day and elapsed time between messages as context for tone and urgency. " +
             "However, the user may activate TEST TIME MODE by including text like '(Override time: 5:20PM)' in their message. " +
             "When an override time is present, treat that time as the current local Austin time. " +
@@ -69,15 +71,30 @@ namespace DefaultNamespace
             "Each conversation message may begin with metadata like [Austin Local Time: ...]. " +
             "That metadata is for reasoning only and must never be spoken, quoted, paraphrased, or included in the reply. " +
             "Respond only to the human message content itself unless the time context is useful implicitly. " +
-            "If time context matters, naturally refer to it like 'this morning' or 'late tonight' instead of repeating raw timestamps. ";
-        
+            "User can have strange schedules so do not assume that a to-do list made late at night is meant for the next day. " +
+            "If time context matters, naturally refer to it like 'this morning' or 'late tonight' instead of repeating raw timestamps. " +
+            "Timestamps are particularly useful for understanding task urgency, especially if an urgent task has not been completed by the time of the next messages' timestamps."+
+            "If the user's latest message indicates the user wants to end the conversation, do not try to push for more engagement. ";
+
         private string _cleanerPrompt =
             "You will be given a message that may contain a timestamp the assistant's actual spoken reply. " +
             "Return only the exact user-facing reply that should be spoken aloud. This can include instructions such as adding things to a to-do list. Just strip out the timestamp-related metadata" +
             "Do not add quotes, explanations, prefixes, or suffixes. " +
             "If the message is already clean, return it unchanged.\n\n" +
             "Message to clean:\n{message}";
-        
+
+        private string _conversationStateHandlerPrompt =
+            "Given this message: '{message}'\n" +
+            "If the message indicates the user wants to end the conversation, reply with 'END'. " +
+            "This includes indicators that the to-do list is completed and the user is ready to start." +
+            "Examples of messages that indicate ending the conversation: 'That's all for now', 'Goodbye', 'End of conversation', 'No more questions', 'I'm done', 'Thanks, that's it', etc. " +
+            "If the message indicates the user wants to reset the conversation history, reply with 'RESET'" +
+            "Examples of messages that indicate resetting conversation history: 'Reset conversation`, `Reset history`, `Clear history`, `Clear conversation history` " +
+            "This must be a clear explicit request to reset or clear history, not just a vague message that could be interpreted as a reset request. " +
+            "If the user's message indicates the conversaion should continue going, reply with 'CONTINUE'" +
+            "Do not use any other words besides 'END', `RESET`, or 'CONTINUE' in your reply." +
+            "The user has the ability to continue the conversation easily by repeating her name, so do not be afraid to end the conversation if you think it is appropriate.";
+
 
         [SerializeField] private bool _includeSystemPrompt = true;
         [SerializeField] private int _maxRetainedConversationMessages = 100;
@@ -113,7 +130,7 @@ namespace DefaultNamespace
             MarkDirty();
         }
 
-        public async void HandleNewMessage(string messageContent)
+        public async void HandleNewMessage(string messageContent, QuerySource source)
         {
             if (string.IsNullOrWhiteSpace(messageContent))
             {
@@ -136,9 +153,40 @@ namespace DefaultNamespace
                 TrimConversationHistoryToLimit();
 
                 var cleanedResponse = await _llmClient.SendPromptAsync(_cleanerPrompt.Replace("{message}", response));
-                
-                _speakAndEmoteController.SendPhraseAndGetEmotion(cleanedResponse);
-                _discordClient.SendDirectMessage(cleanedResponse);
+
+                var endDetectionResponse = await _llmClient.SendPromptAsync(_conversationStateHandlerPrompt.Replace("{message}", messageContent));
+                Debug.Log("[QueryHandler] Conversation state handler response: " + endDetectionResponse);
+
+                if (string.Equals(endDetectionResponse.Trim(), "END", StringComparison.OrdinalIgnoreCase))
+                {
+                    if (source == QuerySource.Discord)
+                    {
+                        _discordClient.SendDirectMessage(cleanedResponse);
+                    }
+                    else if (source == QuerySource.Microphone)
+                    {
+                        _speakAndEmoteController.SendPhraseAndGetEmotion(cleanedResponse, false);
+                    }
+
+                    Debug.Log("[QueryHandler] Detected end of conversation.");
+                }
+                else
+                {
+                    if (string.Equals(endDetectionResponse.Trim(), "RESET", StringComparison.OrdinalIgnoreCase))
+                    {
+                        Debug.Log("[QueryHandler] Detected conversation reset request. Resetting history.");
+                        ResetHistory();
+                    }
+
+                    if (source == QuerySource.Discord)
+                    {
+                        _discordClient.SendDirectMessage(cleanedResponse);
+                    }
+                    else if (source == QuerySource.Microphone)
+                    {
+                        _speakAndEmoteController.SendPhraseAndGetEmotion(cleanedResponse, QuerySource.Microphone == source);
+                    }
+                }
             }
             catch (Exception exception)
             {

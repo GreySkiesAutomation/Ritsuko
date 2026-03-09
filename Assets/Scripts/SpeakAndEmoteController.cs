@@ -26,14 +26,14 @@ public class SpeakAndEmoteController : MonoBehaviour
     
     [SerializeField] private BaseTtsUnityPlayer _ttsUnityPlayer;
 
-    public void SendPhraseAndGetEmotion(string thingToSpeak)
+    public void SendPhraseAndGetEmotion(string thingToSpeak, bool promptAfterwards = false)
     {
         _thingToSpeak = thingToSpeak;
-        SendAndGetEmotion();
+        SendAndGetEmotion(promptAfterwards);
     }
     
     [Button("Send And Wait For Answer")]
-    private void SendAndGetEmotion()
+    private void SendAndGetEmotion(bool promptAfterwards = false)
     {
         if (_isWaiting)
         {
@@ -47,10 +47,11 @@ public class SpeakAndEmoteController : MonoBehaviour
             return;
         }
 
-        _ = SendRoutine();
+        _ = SendRoutine(promptAfterwards);
     }
 
-    private async Task SendRoutine()
+    // ReSharper disable Unity.PerformanceAnalysis
+    private async Task SendRoutine(bool promptAfterwards = false)
     {
         _isWaiting = true;
         MarkDirty();
@@ -91,7 +92,7 @@ public class SpeakAndEmoteController : MonoBehaviour
             
             _dialogText.text = _thingToSpeak;
             
-            _ttsUnityPlayer.GenerateAndPlay(_thingToSpeak);
+            _ttsUnityPlayer.GenerateAndPlay(_thingToSpeak, promptAfterwards);
         }
         catch (System.Exception e)
         {

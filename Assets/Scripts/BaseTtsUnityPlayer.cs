@@ -12,6 +12,8 @@ public abstract class BaseTtsUnityPlayer : MonoBehaviour
 
     [Header("Audio")]
     [SerializeField] private AudioSource _audioSource;
+    
+    [SerializeField] private WakeWordSidecarClient _wakeWordSidecarClient;
 
     private Coroutine _speakCoroutine;
     private AudioClip _currentAudioClip;
@@ -26,7 +28,7 @@ public abstract class BaseTtsUnityPlayer : MonoBehaviour
         GenerateAndPlay(_textToSpeak);
     }
 
-    public void GenerateAndPlay(string textToSpeak, bool force = false)
+    public void GenerateAndPlay(string textToSpeak, bool promptAfterwards = false)
     {
         if (_audioSource == null)
         {
@@ -36,15 +38,10 @@ public abstract class BaseTtsUnityPlayer : MonoBehaviour
 
         if (_speakCoroutine != null)
         {
-            if (force == false)
-            {
-                return;
-            }
-
             StopSpeaking();
         }
 
-        _speakCoroutine = StartCoroutine(GenerateAndPlayCoroutine(textToSpeak));
+        _speakCoroutine = StartCoroutine(GenerateAndPlayCoroutine(textToSpeak, promptAfterwards));
     }
 
     public void StopSpeaking()
@@ -88,7 +85,7 @@ public abstract class BaseTtsUnityPlayer : MonoBehaviour
         StopSpeaking();
     }
 
-    private IEnumerator GenerateAndPlayCoroutine(string textToSpeak)
+    private IEnumerator GenerateAndPlayCoroutine(string textToSpeak, bool promptAfterwards)
     {
         yield return GenerateAudioClipCoroutine(
             textToSpeak,
@@ -107,6 +104,15 @@ public abstract class BaseTtsUnityPlayer : MonoBehaviour
             {
                 yield return null;
             }
+        }
+        
+        
+        float PERIOD_TO_WAIT_BEFORE_LISTENING_FOR_RESPONSE_SECONDS = 0.5f;
+        yield return new WaitForSeconds(PERIOD_TO_WAIT_BEFORE_LISTENING_FOR_RESPONSE_SECONDS);
+
+        if (promptAfterwards)
+        {
+            _wakeWordSidecarClient.OnWakeWordTriggered();
         }
 
         _speakCoroutine = null;

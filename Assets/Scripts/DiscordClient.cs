@@ -111,7 +111,7 @@ public class DiscordClient : MonoBehaviour
 
                 if (_queryHandler != null)
                 {
-                    _queryHandler.HandleNewMessage(message.messageText);
+                    _queryHandler.HandleNewMessage(message.messageText, QuerySource.Discord);
                 }
                 else
                 {
