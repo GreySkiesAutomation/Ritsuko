@@ -6,6 +6,7 @@ using System.Collections.Concurrent;
 using System.IO;
 using System.Net.Sockets;
 using System.Threading;
+using DefaultNamespace;
 using Newtonsoft.Json;
 using UnityEngine;
 using UnityEngine.Events;
@@ -16,7 +17,6 @@ public class WakeWordSidecarClient : MonoBehaviour
     [SerializeField] private int _port = 17777;
     [SerializeField] private bool _connectOnStart = true;
     [SerializeField] private GameObject _wakeWordDebugIndicator;
-    [SerializeField] private MicrophoneInputController _microphoneInputController;
     
     private TcpClient _tcpClient;
     private Thread _readerThread;
@@ -175,7 +175,7 @@ public class WakeWordSidecarClient : MonoBehaviour
     }
     public void OnWakeWordTriggered()
     {
-        _microphoneInputController.SetSpeechActivityStateToActive();
+        GlobalManager.I.MicrophoneInputController.SetSpeechActivityStateToActive();
         OnWakeWordTriggeredEvent?.Invoke();
         if(_currentWakeWordDebugIndicatorCoroutine != null)
         {

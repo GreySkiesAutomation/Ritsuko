@@ -11,10 +11,6 @@ using UnityEngine.Networking;
 
 public class OpenAISpeechToText : MonoBehaviour
 {
-    [Header("References")]
-    [SerializeField] private MicrophoneInputController _microphoneInputController;
-    [SerializeField] private QueryHandler _queryHandler;
-
     [Header("OpenAI")]
     private string _openAIApiKey => Secrets.OpenAIApiKey;
     [SerializeField] private string _transcriptionModelName = "gpt-4o-transcribe";
@@ -29,6 +25,8 @@ public class OpenAISpeechToText : MonoBehaviour
     [SerializeField] [ReadOnly] private bool _isTranscriptionInProgress;
     [SerializeField] [ReadOnly] private long _captureStartSampleValueIndex;
     [SerializeField] [ReadOnly] private long _captureEndSampleValueIndex;
+
+    private MicrophoneInputController MicrophoneInputController => GlobalManager.I.MicrophoneInputController;
 
     [Button("StartListening")]
     public void StartListening()
@@ -45,20 +43,20 @@ public class OpenAISpeechToText : MonoBehaviour
             return;
         }
 
-        if (_microphoneInputController == null)
+        if (MicrophoneInputController == null)
         {
             Debug.LogError("[OpenAISpeechToText] MicrophoneInputController reference is missing.");
             return;
         }
 
-        if (!_microphoneInputController.IsMicrophoneRunning)
+        if (!MicrophoneInputController.IsMicrophoneRunning)
         {
             Debug.LogError("[OpenAISpeechToText] MicrophoneInputController is not running.");
             return;
         }
 
-        var preRollSampleValueCount = Mathf.RoundToInt(_preRollSeconds * _microphoneInputController.RecordingSampleRate * _microphoneInputController.ChannelCount);
-        _captureStartSampleValueIndex = Math.Max(0, _microphoneInputController.TotalSampleValuesCaptured - preRollSampleValueCount);
+        var preRollSampleValueCount = Mathf.RoundToInt(_preRollSeconds * MicrophoneInputController.RecordingSampleRate * MicrophoneInputController.ChannelCount);
+        _captureStartSampleValueIndex = Math.Max(0, MicrophoneInputController.TotalSampleValuesCaptured - preRollSampleValueCount);
         _captureEndSampleValueIndex = _captureStartSampleValueIndex;
         _isListening = true;
 
@@ -69,7 +67,7 @@ public class OpenAISpeechToText : MonoBehaviour
 
     public void Update()
     {
-        if (_isListening && _microphoneInputController.CurrentSpeechActivityState == MicrophoneInputController.SpeechActivityState.Inactive)
+        if (_isListening && MicrophoneInputController.CurrentSpeechActivityState == MicrophoneInputController.SpeechActivityState.Inactive)
         {
             StopListeningAndSend();
         }
@@ -84,15 +82,15 @@ public class OpenAISpeechToText : MonoBehaviour
             return;
         }
 
-        if (_microphoneInputController == null)
+        if (MicrophoneInputController == null)
         {
             Debug.LogError("[OpenAISpeechToText] MicrophoneInputController reference is missing.");
             CleanupListeningState();
             return;
         }
 
-        _captureEndSampleValueIndex = _microphoneInputController.TotalSampleValuesCaptured;
-        var trimmedAudioClip = _microphoneInputController.CreateAudioClipFromRecentSampleValues(
+        _captureEndSampleValueIndex = MicrophoneInputController.TotalSampleValuesCaptured;
+        var trimmedAudioClip = MicrophoneInputController.CreateAudioClipFromRecentSampleValues(
             _captureStartSampleValueIndex,
             _captureEndSampleValueIndex,
             "microphone_recording");
@@ -107,23 +105,7 @@ public class OpenAISpeechToText : MonoBehaviour
 
         StartCoroutine(TranscribeAudioClipCoroutine(trimmedAudioClip, "microphone_recording.wav"));
     }
-
-    private void Reset()
-    {
-        if (_microphoneInputController == null)
-        {
-            _microphoneInputController = GetComponent<MicrophoneInputController>();
-        }
-    }
-
-    private void Awake()
-    {
-        if (_microphoneInputController == null)
-        {
-            _microphoneInputController = GetComponent<MicrophoneInputController>();
-        }
-    }
-
+    
     private IEnumerator TranscribeAudioClipCoroutine(AudioClip audioClip, string fileName)
     {
         if (_isTranscriptionInProgress)
@@ -192,7 +174,7 @@ public class OpenAISpeechToText : MonoBehaviour
             }
             else
             {
-                _queryHandler.HandleNewMessage(transcriptionResponse.text, QuerySource.Microphone);
+                GlobalManager.I.QueryHandler.HandleNewMessage(transcriptionResponse.text, QuerySource.Microphone);
             }
 
             Debug.Log("[OpenAISpeechToText] Transcript: " + transcriptionResponse.text);

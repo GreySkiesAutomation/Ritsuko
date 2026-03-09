@@ -13,11 +13,7 @@ using UnityEngine.Serialization;
 public class DiscordClient : MonoBehaviour
 {
     private const string BaseUrl = "http://127.0.0.1:5099";
-
-    [FormerlySerializedAs("_inputRouter")]
-    [Header("Dependencies")]
-    [SerializeField] private QueryHandler _queryHandler;
-
+    
     [Header("Testing UI")]
     [SerializeField] private string _testMessageInputField;
 
@@ -109,9 +105,9 @@ public class DiscordClient : MonoBehaviour
             {
                 Debug.Log($"[DiscordClient] DM from {message.username}: {message.messageText}");
 
-                if (_queryHandler != null)
+                if (GlobalManager.I.QueryHandler != null)
                 {
-                    _queryHandler.HandleNewMessage(message.messageText, QuerySource.Discord);
+                    GlobalManager.I.QueryHandler.HandleNewMessage(message.messageText, QuerySource.Discord);
                 }
                 else
                 {

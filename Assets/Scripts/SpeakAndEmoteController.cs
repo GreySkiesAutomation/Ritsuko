@@ -1,4 +1,5 @@
 ﻿using System.Threading.Tasks;
+using DefaultNamespace;
 using NaughtyAttributes;
 using TMPro;
 using UnityEngine;
@@ -11,8 +12,6 @@ public class SpeakAndEmoteController : MonoBehaviour
     [SerializeField] private string _thingToSpeak;
     
     [Header("Client")]
-    [SerializeField] private OpenRouterChatClient _client;
-
     [SerializeField] private bool _isWaiting;
     
     [Header("Reply")]
@@ -20,12 +19,8 @@ public class SpeakAndEmoteController : MonoBehaviour
     [TextArea(20, 20)]
     [SerializeField] private string _reply;
     
-    [SerializeField] private InteractiveAvatarController _interactiveAvatarController;
-    
     [SerializeField] private TMP_Text _dialogText;
     
-    [SerializeField] private BaseTtsUnityPlayer _ttsUnityPlayer;
-
     public void SendPhraseAndGetEmotion(string thingToSpeak, bool promptAfterwards = false)
     {
         _thingToSpeak = thingToSpeak;
@@ -41,7 +36,7 @@ public class SpeakAndEmoteController : MonoBehaviour
             return;
         }
 
-        if (_client == null)
+        if (GlobalManager.I.LlmClient == null)
         {
             Debug.LogError("No OpenRouterChatClient assigned.");
             return;
@@ -58,41 +53,41 @@ public class SpeakAndEmoteController : MonoBehaviour
 
         try
         {
-            var result = await _client.SendPromptAsync($"Given this dialogue: {_thingToSpeak}\n" +
-                                                       "Which of these emotions fits it best? Only return the number of the emotion:\n" +
-                                                       "0: Neutral\n"+
-                                                       "1: Pissed\n"+
-                                                       "2: Mildly Happy\n"+
-                                                       "3: Infatuated, or Surprised (positive)\n"+
-                                                       "4: Annoyed\n"+
-                                                       "5: Surprised (negative)\n");
+            var result = await GlobalManager.I.LlmClient.SendPromptAsync($"Given this dialogue: {_thingToSpeak}\n" +
+                                                                          "Which of these emotions fits it best? Only return the number of the emotion:\n" +
+                                                                          "0: Neutral\n"+
+                                                                          "1: Pissed\n"+
+                                                                          "2: Mildly Happy\n"+
+                                                                          "3: Infatuated, or Surprised (positive)\n"+
+                                                                          "4: Annoyed\n"+
+                                                                          "5: Surprised (negative)\n");
             _reply = result;
 
             switch (_reply)
             {
                 case "0":
-                    _interactiveAvatarController.SetEmotionNeutral();
+                    GlobalManager.I.AvatarController.SetEmotionNeutral();
                     break;
                 case "1":
-                    _interactiveAvatarController.SetEmotionPissed();
+                    GlobalManager.I.AvatarController.SetEmotionPissed();
                     break;
                 case "2":
-                    _interactiveAvatarController.SetEmotionGlad();
+                    GlobalManager.I.AvatarController.SetEmotionGlad();
                     break;
                 case "3":
-                    _interactiveAvatarController.SetEmotionEcstatic();
+                    GlobalManager.I.AvatarController.SetEmotionEcstatic();
                     break;
                 case "4":
-                    _interactiveAvatarController.SetEmotionAnnoyed();
+                    GlobalManager.I.AvatarController.SetEmotionAnnoyed();
                     break;
                 case "5":
-                    _interactiveAvatarController.SetEmotionSurprised();
+                    GlobalManager.I.AvatarController.SetEmotionSurprised();
                     break;
             }
             
             _dialogText.text = _thingToSpeak;
             
-            _ttsUnityPlayer.GenerateAndPlay(_thingToSpeak, promptAfterwards);
+            GlobalManager.I.TtsPlayer.GenerateAndPlay(_thingToSpeak, promptAfterwards);
         }
         catch (System.Exception e)
         {

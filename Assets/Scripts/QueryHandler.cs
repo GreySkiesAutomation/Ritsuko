@@ -74,9 +74,7 @@ namespace DefaultNamespace
         }
 
         [Header("Dependencies")]
-        [SerializeField] private SpeakAndEmoteController _speakAndEmoteController;
-        [SerializeField] private OpenRouterChatClient _llmClient;
-        [SerializeField] private DiscordClient _discordClient;
+
 
         private string _systemPrompt =
             "You are a personal assistant focused on the user's productivity, motivation, and attention. " +
@@ -198,7 +196,7 @@ namespace DefaultNamespace
 
                 for (var attemptIndex = 0; attemptIndex < _maxJsonParseAttempts; attemptIndex++)
                 {
-                    rawResponse = await _llmClient.SendPromptAsync(outboundMessageHistory);
+                    rawResponse = await GlobalManager.I.LlmClient.SendPromptAsync(outboundMessageHistory);
                     Debug.Log("[QueryHandler] Raw LLM response attempt " + (attemptIndex + 1) + ": " + rawResponse);
 
                     if (TryParseStructuredAssistantResponse(rawResponse, out structuredAssistantResponse))
@@ -247,16 +245,16 @@ namespace DefaultNamespace
         {
             if (source == QuerySource.Discord)
             {
-                _discordClient.SendDirectMessage(cleanedResponse);
+                GlobalManager.I.DiscordClient.SendDirectMessage(cleanedResponse);
             }
             else if (source == QuerySource.Microphone)
             {
-                _speakAndEmoteController.SendPhraseAndGetEmotion(cleanedResponse, promptAfterwards);
+                GlobalManager.I.SpeakAndEmoteController.SendPhraseAndGetEmotion(cleanedResponse, promptAfterwards);
 
                 if (_auditHistoryToDiscord)
                 {
                     var auditMessage = $"**Spoken query from user:** \"{originalQuery}\"\n\n**Spoken response sent to user:** \"{cleanedResponse}\"";
-                    _discordClient.SendDirectMessage(auditMessage);
+                    GlobalManager.I.DiscordClient.SendDirectMessage(auditMessage);
                 }
             }
         }
