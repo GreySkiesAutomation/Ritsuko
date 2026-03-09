@@ -3,66 +3,69 @@
 using System;
 using System.Collections;
 using System.Text;
+using Newtonsoft.Json;
 using UnityEngine;
 using UnityEngine.Networking;
-using Newtonsoft.Json;
 
-public class ElevenLabsTtsUnityPlayer : BaseTtsUnityPlayer
+namespace TextToSpeech
 {
-    [Header("ElevenLabs Settings")]
-    [SerializeField] private string _voiceId = "EXAVITQu4vr4xnSDxMaL"; // default example voice
-
-    [Header("Voice Options")]
-    [SerializeField] private string _modelId = "eleven_flash_v2";
-
-    protected override IEnumerator GenerateAudioClipCoroutine(
-        string textToSpeak,
-        Action<AudioClip> onSuccess)
+    public class ElevenLabsTtsUnityPlayer : BaseTtsUnityPlayer
     {
-        var url = $"https://api.elevenlabs.io/v1/text-to-speech/{_voiceId}/stream";
+        [Header("ElevenLabs Settings")]
+        [SerializeField] private string _voiceId = "EXAVITQu4vr4xnSDxMaL"; // default example voice
 
-        var payload = new ElevenLabsRequest
+        [Header("Voice Options")]
+        [SerializeField] private string _modelId = "eleven_flash_v2";
+
+        protected override IEnumerator GenerateAudioClipCoroutine(
+            string textToSpeak,
+            Action<AudioClip> onSuccess)
         {
-            text = textToSpeak,
-            model_id = _modelId
-        };
+            var url = $"https://api.elevenlabs.io/v1/text-to-speech/{_voiceId}/stream";
 
-        var json = JsonConvert.SerializeObject(payload);
-        var jsonBytes = Encoding.UTF8.GetBytes(json);
+            var payload = new ElevenLabsRequest
+            {
+                text = textToSpeak,
+                model_id = _modelId
+            };
 
-        using var request = new UnityWebRequest(url, UnityWebRequest.kHttpVerbPOST);
+            var json = JsonConvert.SerializeObject(payload);
+            var jsonBytes = Encoding.UTF8.GetBytes(json);
 
-        request.uploadHandler = new UploadHandlerRaw(jsonBytes);
-        request.downloadHandler = new DownloadHandlerAudioClip(url, AudioType.MPEG);
+            using var request = new UnityWebRequest(url, UnityWebRequest.kHttpVerbPOST);
 
-        request.SetRequestHeader("Content-Type", "application/json");
-        request.SetRequestHeader("xi-api-key", Secrets.ELEVENLABS_API_KEY);
+            request.uploadHandler = new UploadHandlerRaw(jsonBytes);
+            request.downloadHandler = new DownloadHandlerAudioClip(url, AudioType.MPEG);
 
-        yield return request.SendWebRequest();
+            request.SetRequestHeader("Content-Type", "application/json");
+            request.SetRequestHeader("xi-api-key", Secrets.ELEVENLABS_API_KEY);
 
-        if (request.result != UnityWebRequest.Result.Success)
-        {
-            Debug.LogError($"ElevenLabs TTS Error: {request.error}");
-            onSuccess?.Invoke(null);
-            yield break;
+            yield return request.SendWebRequest();
+
+            if (request.result != UnityWebRequest.Result.Success)
+            {
+                Debug.LogError($"ElevenLabs TTS Error: {request.error}");
+                onSuccess?.Invoke(null);
+                yield break;
+            }
+
+            var clip = DownloadHandlerAudioClip.GetContent(request);
+
+            if (clip == null)
+            {
+                Debug.LogError("ElevenLabs returned null AudioClip.");
+                onSuccess?.Invoke(null);
+                yield break;
+            }
+
+            onSuccess?.Invoke(clip);
         }
 
-        var clip = DownloadHandlerAudioClip.GetContent(request);
-
-        if (clip == null)
+        private class ElevenLabsRequest
         {
-            Debug.LogError("ElevenLabs returned null AudioClip.");
-            onSuccess?.Invoke(null);
-            yield break;
+            public string text;
+            public string model_id;
         }
-
-        onSuccess?.Invoke(clip);
-    }
-
-    private class ElevenLabsRequest
-    {
-        public string text;
-        public string model_id;
     }
 }
 

@@ -6,189 +6,191 @@ using System.Collections.Concurrent;
 using System.IO;
 using System.Net.Sockets;
 using System.Threading;
-using DefaultNamespace;
 using Newtonsoft.Json;
 using UnityEngine;
 using UnityEngine.Events;
 
-public class WakeWordSidecarClient : MonoBehaviour
+namespace Inputs.SpeechToText
 {
-    [SerializeField] private string _host = "127.0.0.1";
-    [SerializeField] private int _port = 17777;
-    [SerializeField] private bool _connectOnStart = true;
-    [SerializeField] private GameObject _wakeWordDebugIndicator;
+    public class WakeWordSidecarClient : MonoBehaviour
+    {
+        [SerializeField] private string _host = "127.0.0.1";
+        [SerializeField] private int _port = 17777;
+        [SerializeField] private bool _connectOnStart = true;
+        [SerializeField] private GameObject _wakeWordDebugIndicator;
     
-    private TcpClient _tcpClient;
-    private Thread _readerThread;
-    private volatile bool _isRunning;
-    private readonly ConcurrentQueue<Action> _mainThreadActions = new ConcurrentQueue<Action>();
+        private TcpClient _tcpClient;
+        private Thread _readerThread;
+        private volatile bool _isRunning;
+        private readonly ConcurrentQueue<Action> _mainThreadActions = new ConcurrentQueue<Action>();
     
-    [SerializeField]
-    public UnityEvent OnWakeWordTriggeredEvent;
+        [SerializeField]
+        public UnityEvent OnWakeWordTriggeredEvent;
 
-    private Coroutine _currentWakeWordDebugIndicatorCoroutine;
+        private Coroutine _currentWakeWordDebugIndicatorCoroutine;
 
-    [Serializable]
-    private class WakeWordSidecarMessage
-    {
-        public string type;
-        public double timestampUnixSeconds;
-    }
-
-    private void Start()
-    {
-        if (_connectOnStart)
+        [Serializable]
+        private class WakeWordSidecarMessage
         {
-            ConnectToWakeWordSidecar();
-        }
-    }
-
-    private void Update()
-    {
-        while (_mainThreadActions.TryDequeue(out var action))
-        {
-            action?.Invoke();
-        }
-    }
-
-    private void OnDestroy()
-    {
-        DisconnectFromWakeWordSidecar();
-    }
-
-    public void ConnectToWakeWordSidecar()
-    {
-        if (_isRunning)
-        {
-            Debug.LogWarning("[WakeWordSidecarClient] Already connected or connecting.");
-            return;
+            public string type;
+            public double timestampUnixSeconds;
         }
 
-        _isRunning = true;
-        _readerThread = new Thread(ReaderThreadLoop);
-        _readerThread.IsBackground = true;
-        _readerThread.Start();
-    }
-
-    public void DisconnectFromWakeWordSidecar()
-    {
-        _isRunning = false;
-
-        try
+        private void Start()
         {
-            _tcpClient?.Close();
-        }
-        catch (Exception exception)
-        {
-            Debug.LogWarning("[WakeWordSidecarClient] Error while closing TCP client: " + exception.Message);
+            if (_connectOnStart)
+            {
+                ConnectToWakeWordSidecar();
+            }
         }
 
-        _tcpClient = null;
-
-        if (_readerThread != null && _readerThread.IsAlive)
+        private void Update()
         {
-            _readerThread.Join(500);
+            while (_mainThreadActions.TryDequeue(out var action))
+            {
+                action?.Invoke();
+            }
         }
 
-        _readerThread = null;
-    }
-
-    private void ReaderThreadLoop()
-    {
-        while (_isRunning)
+        private void OnDestroy()
         {
+            DisconnectFromWakeWordSidecar();
+        }
+
+        public void ConnectToWakeWordSidecar()
+        {
+            if (_isRunning)
+            {
+                Debug.LogWarning("[WakeWordSidecarClient] Already connected or connecting.");
+                return;
+            }
+
+            _isRunning = true;
+            _readerThread = new Thread(ReaderThreadLoop);
+            _readerThread.IsBackground = true;
+            _readerThread.Start();
+        }
+
+        public void DisconnectFromWakeWordSidecar()
+        {
+            _isRunning = false;
+
             try
             {
-                Debug.Log("[WakeWordSidecarClient] Connecting to wake word sidecar...");
-                _tcpClient = new TcpClient();
-                _tcpClient.NoDelay = true;
-                _tcpClient.Connect(_host, _port);
-
-                Debug.Log("[WakeWordSidecarClient] Connected to wake word sidecar.");
-
-                using var networkStream = _tcpClient.GetStream();
-                using var streamReader = new StreamReader(networkStream);
-
-                while (_isRunning && _tcpClient.Connected)
-                {
-                    var line = streamReader.ReadLine();
-
-                    if (string.IsNullOrWhiteSpace(line))
-                    {
-                        continue;
-                    }
-
-                    HandleIncomingMessage(line);
-                }
+                _tcpClient?.Close();
             }
             catch (Exception exception)
             {
-                Debug.LogWarning("[WakeWordSidecarClient] Connection error: " + exception.Message);
+                Debug.LogWarning("[WakeWordSidecarClient] Error while closing TCP client: " + exception.Message);
             }
 
-            if (_isRunning)
+            _tcpClient = null;
+
+            if (_readerThread != null && _readerThread.IsAlive)
             {
-                Thread.Sleep(1000);
+                _readerThread.Join(500);
+            }
+
+            _readerThread = null;
+        }
+
+        private void ReaderThreadLoop()
+        {
+            while (_isRunning)
+            {
+                try
+                {
+                    Debug.Log("[WakeWordSidecarClient] Connecting to wake word sidecar...");
+                    _tcpClient = new TcpClient();
+                    _tcpClient.NoDelay = true;
+                    _tcpClient.Connect(_host, _port);
+
+                    Debug.Log("[WakeWordSidecarClient] Connected to wake word sidecar.");
+
+                    using var networkStream = _tcpClient.GetStream();
+                    using var streamReader = new StreamReader(networkStream);
+
+                    while (_isRunning && _tcpClient.Connected)
+                    {
+                        var line = streamReader.ReadLine();
+
+                        if (string.IsNullOrWhiteSpace(line))
+                        {
+                            continue;
+                        }
+
+                        HandleIncomingMessage(line);
+                    }
+                }
+                catch (Exception exception)
+                {
+                    Debug.LogWarning("[WakeWordSidecarClient] Connection error: " + exception.Message);
+                }
+
+                if (_isRunning)
+                {
+                    Thread.Sleep(1000);
+                }
             }
         }
-    }
 
-    private void HandleIncomingMessage(string rawMessage)
-    {
-        WakeWordSidecarMessage sidecarMessage = null;
+        private void HandleIncomingMessage(string rawMessage)
+        {
+            WakeWordSidecarMessage sidecarMessage = null;
 
-        try
-        {
-            sidecarMessage = JsonConvert.DeserializeObject<WakeWordSidecarMessage>(rawMessage);
-        }
-        catch (Exception exception)
-        {
-            Debug.LogWarning("[WakeWordSidecarClient] Failed to parse message: " + rawMessage + " Exception: " + exception.Message);
-            return;
-        }
-
-        if (sidecarMessage == null)
-        {
-            Debug.LogWarning("[WakeWordSidecarClient] Parsed null message.");
-            return;
-        }
-
-        if (sidecarMessage.type == "wake_word_detected")
-        {
-            _mainThreadActions.Enqueue(() =>
+            try
             {
-                Debug.Log("[WakeWordSidecarClient] Wake word detected from sidecar at unix time: " + sidecarMessage.timestampUnixSeconds);
+                sidecarMessage = JsonConvert.DeserializeObject<WakeWordSidecarMessage>(rawMessage);
+            }
+            catch (Exception exception)
+            {
+                Debug.LogWarning("[WakeWordSidecarClient] Failed to parse message: " + rawMessage + " Exception: " + exception.Message);
+                return;
+            }
 
-                OnWakeWordTriggered();
-            });
+            if (sidecarMessage == null)
+            {
+                Debug.LogWarning("[WakeWordSidecarClient] Parsed null message.");
+                return;
+            }
+
+            if (sidecarMessage.type == "wake_word_detected")
+            {
+                _mainThreadActions.Enqueue(() =>
+                {
+                    Debug.Log("[WakeWordSidecarClient] Wake word detected from sidecar at unix time: " + sidecarMessage.timestampUnixSeconds);
+
+                    OnWakeWordTriggered();
+                });
+            }
+            else
+            {
+                Debug.Log("[WakeWordSidecarClient] Unknown sidecar message type: " + sidecarMessage.type);
+            }
         }
-        else
+
+        [NaughtyAttributes.Button]
+        private void WakeWordTestTrigger()
         {
-            Debug.Log("[WakeWordSidecarClient] Unknown sidecar message type: " + sidecarMessage.type);
+            OnWakeWordTriggered();
         }
-    }
-
-    [NaughtyAttributes.Button]
-    private void WakeWordTestTrigger()
-    {
-        OnWakeWordTriggered();
-    }
-    public void OnWakeWordTriggered()
-    {
-        GlobalManager.I.MicrophoneInputController.SetSpeechActivityStateToActive();
-        OnWakeWordTriggeredEvent?.Invoke();
-        if(_currentWakeWordDebugIndicatorCoroutine != null)
+        public void OnWakeWordTriggered()
         {
-            StopCoroutine(_currentWakeWordDebugIndicatorCoroutine);
+            GlobalManager.I.MicrophoneInputController.SetSpeechActivityStateToActive();
+            OnWakeWordTriggeredEvent?.Invoke();
+            if(_currentWakeWordDebugIndicatorCoroutine != null)
+            {
+                StopCoroutine(_currentWakeWordDebugIndicatorCoroutine);
+            }
+            _currentWakeWordDebugIndicatorCoroutine = StartCoroutine(ShowWakeWordDebugIndicatorCoroutine());
         }
-        _currentWakeWordDebugIndicatorCoroutine = StartCoroutine(ShowWakeWordDebugIndicatorCoroutine());
-    }
 
-    private IEnumerator ShowWakeWordDebugIndicatorCoroutine()
-    {
-        _wakeWordDebugIndicator.SetActive(true);
-        yield return new WaitForSeconds(3f);
-        _wakeWordDebugIndicator.SetActive(false);
+        private IEnumerator ShowWakeWordDebugIndicatorCoroutine()
+        {
+            _wakeWordDebugIndicator.SetActive(true);
+            yield return new WaitForSeconds(3f);
+            _wakeWordDebugIndicator.SetActive(false);
+        }
     }
 }
 

@@ -6,63 +6,66 @@ using System.Text;
 using UnityEngine;
 using UnityEngine.Networking;
 
-public class AzureTtsUnityPlayer : BaseTtsUnityPlayer
+namespace TextToSpeech
 {
-    [Header("Azure Settings")]
-    [SerializeField] private string _azureRegion = "eastus";
-
-    [Header("Azure Voice")]
-    [SerializeField] private string _voiceName = "en-US-PhoebeMultilingualNeural";
-
-    protected override IEnumerator GenerateAudioClipCoroutine(
-        string textToSpeak,
-        System.Action<AudioClip> onSuccess)
+    public class AzureTtsUnityPlayer : BaseTtsUnityPlayer
     {
-        var url = $"https://{_azureRegion}.tts.speech.microsoft.com/cognitiveservices/v1";
+        [Header("Azure Settings")]
+        [SerializeField] private string _azureRegion = "eastus";
 
-        var ssml = BuildSsml(textToSpeak);
-        var ssmlBytes = Encoding.UTF8.GetBytes(ssml);
+        [Header("Azure Voice")]
+        [SerializeField] private string _voiceName = "en-US-PhoebeMultilingualNeural";
 
-        using var request = new UnityWebRequest(url, UnityWebRequest.kHttpVerbPOST);
-        request.uploadHandler = new UploadHandlerRaw(ssmlBytes);
-        request.downloadHandler = new DownloadHandlerAudioClip(url, AudioType.MPEG);
-
-        request.SetRequestHeader("Ocp-Apim-Subscription-Key", Secrets.AZURE_TTS_API_KEY);
-        request.SetRequestHeader("Content-Type", "application/ssml+xml");
-        request.SetRequestHeader("X-Microsoft-OutputFormat", "audio-24khz-48kbitrate-mono-mp3");
-        request.SetRequestHeader("User-Agent", "RitsukoUnity");
-
-        yield return request.SendWebRequest();
-
-        if (request.result != UnityWebRequest.Result.Success)
+        protected override IEnumerator GenerateAudioClipCoroutine(
+            string textToSpeak,
+            System.Action<AudioClip> onSuccess)
         {
-            Debug.LogError($"Azure TTS Error: {request.error}");
-            yield break;
+            var url = $"https://{_azureRegion}.tts.speech.microsoft.com/cognitiveservices/v1";
+
+            var ssml = BuildSsml(textToSpeak);
+            var ssmlBytes = Encoding.UTF8.GetBytes(ssml);
+
+            using var request = new UnityWebRequest(url, UnityWebRequest.kHttpVerbPOST);
+            request.uploadHandler = new UploadHandlerRaw(ssmlBytes);
+            request.downloadHandler = new DownloadHandlerAudioClip(url, AudioType.MPEG);
+
+            request.SetRequestHeader("Ocp-Apim-Subscription-Key", Secrets.AZURE_TTS_API_KEY);
+            request.SetRequestHeader("Content-Type", "application/ssml+xml");
+            request.SetRequestHeader("X-Microsoft-OutputFormat", "audio-24khz-48kbitrate-mono-mp3");
+            request.SetRequestHeader("User-Agent", "RitsukoUnity");
+
+            yield return request.SendWebRequest();
+
+            if (request.result != UnityWebRequest.Result.Success)
+            {
+                Debug.LogError($"Azure TTS Error: {request.error}");
+                yield break;
+            }
+
+            var audioClip = DownloadHandlerAudioClip.GetContent(request);
+
+            if (audioClip == null)
+            {
+                Debug.LogError("Azure TTS Error: Downloaded AudioClip was null.");
+                yield break;
+            }
+
+            onSuccess?.Invoke(audioClip);
         }
 
-        var audioClip = DownloadHandlerAudioClip.GetContent(request);
-
-        if (audioClip == null)
+        private string BuildSsml(string textToSpeak)
         {
-            Debug.LogError("Azure TTS Error: Downloaded AudioClip was null.");
-            yield break;
-        }
+            var escapedTextToSpeak = SecurityElement.Escape(textToSpeak);
 
-        onSuccess?.Invoke(audioClip);
-    }
-
-    private string BuildSsml(string textToSpeak)
-    {
-        var escapedTextToSpeak = SecurityElement.Escape(textToSpeak);
-
-        return
-$@"<speak version=""1.0"" xml:lang=""en-US""
+            return
+                $@"<speak version=""1.0"" xml:lang=""en-US""
 xmlns=""http://www.w3.org/2001/10/synthesis""
 xmlns:mstts=""http://www.w3.org/2001/mstts"">
   <voice name=""{_voiceName}"">
     {escapedTextToSpeak}
   </voice>
 </speak>";
+        }
     }
 }
 

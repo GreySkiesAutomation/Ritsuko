@@ -1,11 +1,12 @@
-using UnityEngine;
-
-public enum Emotion
+namespace Avatar
 {
-    Neutral,
-    Pissed,
-    Glad,
-    EcstaticHappy,
-    Annoyed,
-    Surprised
+    public enum Emotion
+    {
+        Neutral,
+        Pissed,
+        Glad,
+        EcstaticHappy,
+        Annoyed,
+        Surprised
+    }
 }

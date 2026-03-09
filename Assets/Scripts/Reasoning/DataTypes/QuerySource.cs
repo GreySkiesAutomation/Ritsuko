@@ -1,4 +1,4 @@
-﻿namespace DefaultNamespace
+﻿namespace Reasoning.DataTypes
 {
     public enum QuerySource
     {

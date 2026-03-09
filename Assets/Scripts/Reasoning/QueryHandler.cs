@@ -6,9 +6,9 @@ using System.Globalization;
 using System.IO;
 using NaughtyAttributes;
 using Newtonsoft.Json;
+using Reasoning.DataTypes;
 using UnityEngine;
-
-namespace DefaultNamespace
+namespace Reasoning
 {
     public class QueryHandler : MonoBehaviour
     {

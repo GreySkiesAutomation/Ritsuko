@@ -3,215 +3,217 @@
 using System;
 using System.Collections;
 using System.Text;
-using DefaultNamespace;
 using NaughtyAttributes;
+using Reasoning.DataTypes;
 using UnityEngine;
 using UnityEngine.Networking;
-using TMPro;
 using UnityEngine.Serialization;
 
-public class DiscordClient : MonoBehaviour
+namespace Inputs.DirectText
 {
-    private const string BaseUrl = "http://127.0.0.1:5099";
+    public class DiscordClient : MonoBehaviour
+    {
+        private const string BaseUrl = "http://127.0.0.1:5099";
     
-    [Header("Testing UI")]
-    [SerializeField] private string _testMessageInputField;
+        [Header("Testing UI")]
+        [SerializeField] private string _testMessageInputField;
 
-    [Header("Polling")]
-    [SerializeField] private float _pollIntervalSeconds = 0.1f;
+        [Header("Polling")]
+        [SerializeField] private float _pollIntervalSeconds = 0.1f;
 
-    [Header("Heartbeat")]
-    [SerializeField] private float _heartbeatIntervalSeconds = 5f;
+        [Header("Heartbeat")]
+        [SerializeField] private float _heartbeatIntervalSeconds = 5f;
 
-    private void Start()
-    {
-        Debug.Log("[DiscordClient] Starting client.");
-
-        StartCoroutine(PollIncomingMessagesCoroutine());
-        StartCoroutine(HeartbeatCoroutine());
-    }
-
-    // =========================
-    // HEARTBEAT
-    // =========================
-
-    private IEnumerator HeartbeatCoroutine()
-    {
-        while (true)
+        private void Start()
         {
-            using (var request = new UnityWebRequest(BaseUrl + "/heartbeat", "POST"))
+            Debug.Log("[DiscordClient] Starting client.");
+
+            StartCoroutine(PollIncomingMessagesCoroutine());
+            StartCoroutine(HeartbeatCoroutine());
+        }
+
+        // =========================
+        // HEARTBEAT
+        // =========================
+
+        private IEnumerator HeartbeatCoroutine()
+        {
+            while (true)
             {
-                request.uploadHandler = new UploadHandlerRaw(Array.Empty<byte>());
+                using (var request = new UnityWebRequest(BaseUrl + "/heartbeat", "POST"))
+                {
+                    request.uploadHandler = new UploadHandlerRaw(Array.Empty<byte>());
+                    request.downloadHandler = new DownloadHandlerBuffer();
+                    request.SetRequestHeader("Content-Type", "application/json");
+
+                    yield return request.SendWebRequest();
+
+                    if (request.result != UnityWebRequest.Result.Success)
+                    {
+                        Debug.LogWarning("[DiscordClient] Heartbeat failed: " + request.error);
+                    }
+                }
+
+                yield return new WaitForSeconds(_heartbeatIntervalSeconds);
+            }
+        }
+
+        // =========================
+        // POLL INCOMING MESSAGES
+        // =========================
+
+        private IEnumerator PollIncomingMessagesCoroutine()
+        {
+            while (true)
+            {
+                using (var request = UnityWebRequest.Get(BaseUrl + "/poll-incoming"))
+                {
+                    yield return request.SendWebRequest();
+
+                    if (request.result != UnityWebRequest.Result.Success)
+                    {
+                        Debug.LogWarning("[DiscordClient] Poll failed: " + request.error);
+                    }
+                    else
+                    {
+                        HandleIncomingMessages(request.downloadHandler.text);
+                    }
+                }
+
+                yield return new WaitForSeconds(_pollIntervalSeconds);
+            }
+        }
+
+        private void HandleIncomingMessages(string json)
+        {
+            if (string.IsNullOrWhiteSpace(json) || json == "[]")
+            {
+                return;
+            }
+
+            var wrappedJson = "{\"Messages\":" + json + "}";
+
+            try
+            {
+                var response = JsonUtility.FromJson<IncomingDiscordMessageListWrapper>(wrappedJson);
+
+                if (response?.Messages == null)
+                {
+                    return;
+                }
+
+                foreach (var message in response.Messages)
+                {
+                    Debug.Log($"[DiscordClient] DM from {message.username}: {message.messageText}");
+
+                    if (GlobalManager.I.QueryHandler != null)
+                    {
+                        GlobalManager.I.QueryHandler.HandleNewMessage(message.messageText, QuerySource.Discord);
+                    }
+                    else
+                    {
+                        Debug.LogWarning("[DiscordClient] No InputRouter assigned.");
+                    }
+                }
+            }
+            catch (Exception exception)
+            {
+                Debug.LogError("[DiscordClient] JSON parse error: " + exception);
+                Debug.LogError("[DiscordClient] Raw JSON: " + json);
+            }
+        }
+
+        // =========================
+        // SEND DM
+        // =========================
+
+        [Button("Send Test Message")]
+        public void SendTestMessageFromInput()
+        {
+            if (_testMessageInputField == null)
+            {
+                Debug.LogWarning("[DiscordClient] No input field assigned.");
+                return;
+            }
+
+            var message = _testMessageInputField;
+
+            if (string.IsNullOrWhiteSpace(message))
+            {
+                Debug.LogWarning("[DiscordClient] Refusing to send empty message.");
+                return;
+            }
+
+            SendDirectMessage(message);
+        }
+
+        public void SendDirectMessage(string messageText)
+        {
+            StartCoroutine(SendDirectMessageCoroutine(messageText));
+        }
+
+        private IEnumerator SendDirectMessageCoroutine(string messageText)
+        {
+            var requestBody = new SendDirectMessageRequest
+            {
+                userId = Secrets.USER_ID_PEARLGREY,
+                messageText = messageText
+            };
+
+            var json = JsonUtility.ToJson(requestBody);
+            var bodyRaw = Encoding.UTF8.GetBytes(json);
+
+            using (var request = new UnityWebRequest(BaseUrl + "/send-dm", "POST"))
+            {
+                request.uploadHandler = new UploadHandlerRaw(bodyRaw);
                 request.downloadHandler = new DownloadHandlerBuffer();
+
                 request.SetRequestHeader("Content-Type", "application/json");
 
                 yield return request.SendWebRequest();
 
                 if (request.result != UnityWebRequest.Result.Success)
                 {
-                    Debug.LogWarning("[DiscordClient] Heartbeat failed: " + request.error);
-                }
-            }
-
-            yield return new WaitForSeconds(_heartbeatIntervalSeconds);
-        }
-    }
-
-    // =========================
-    // POLL INCOMING MESSAGES
-    // =========================
-
-    private IEnumerator PollIncomingMessagesCoroutine()
-    {
-        while (true)
-        {
-            using (var request = UnityWebRequest.Get(BaseUrl + "/poll-incoming"))
-            {
-                yield return request.SendWebRequest();
-
-                if (request.result != UnityWebRequest.Result.Success)
-                {
-                    Debug.LogWarning("[DiscordClient] Poll failed: " + request.error);
+                    Debug.LogWarning("[DiscordClient] Send DM failed: " + request.error);
                 }
                 else
                 {
-                    HandleIncomingMessages(request.downloadHandler.text);
-                }
-            }
-
-            yield return new WaitForSeconds(_pollIntervalSeconds);
-        }
-    }
-
-    private void HandleIncomingMessages(string json)
-    {
-        if (string.IsNullOrWhiteSpace(json) || json == "[]")
-        {
-            return;
-        }
-
-        var wrappedJson = "{\"Messages\":" + json + "}";
-
-        try
-        {
-            var response = JsonUtility.FromJson<IncomingDiscordMessageListWrapper>(wrappedJson);
-
-            if (response?.Messages == null)
-            {
-                return;
-            }
-
-            foreach (var message in response.Messages)
-            {
-                Debug.Log($"[DiscordClient] DM from {message.username}: {message.messageText}");
-
-                if (GlobalManager.I.QueryHandler != null)
-                {
-                    GlobalManager.I.QueryHandler.HandleNewMessage(message.messageText, QuerySource.Discord);
-                }
-                else
-                {
-                    Debug.LogWarning("[DiscordClient] No InputRouter assigned.");
+                    Debug.Log("[DiscordClient] DM sent successfully.");
                 }
             }
         }
-        catch (Exception exception)
-        {
-            Debug.LogError("[DiscordClient] JSON parse error: " + exception);
-            Debug.LogError("[DiscordClient] Raw JSON: " + json);
-        }
-    }
 
-    // =========================
-    // SEND DM
-    // =========================
+        // =========================
+        // DATA STRUCTURES
+        // =========================
 
-    [Button("Send Test Message")]
-    public void SendTestMessageFromInput()
-    {
-        if (_testMessageInputField == null)
+        [Serializable]
+        private class IncomingDiscordMessage
         {
-            Debug.LogWarning("[DiscordClient] No input field assigned.");
-            return;
+            [FormerlySerializedAs("UserId")]
+            public ulong userId;
+            [FormerlySerializedAs("Username")]
+            public string username;
+            [FormerlySerializedAs("MessageText")]
+            public string messageText;
+            [FormerlySerializedAs("ReceivedUtcIso8601")]
+            public string receivedUtcIso8601;
         }
 
-        var message = _testMessageInputField;
-
-        if (string.IsNullOrWhiteSpace(message))
+        [Serializable]
+        private class IncomingDiscordMessageListWrapper
         {
-            Debug.LogWarning("[DiscordClient] Refusing to send empty message.");
-            return;
+            public IncomingDiscordMessage[] Messages;
         }
 
-        SendDirectMessage(message);
-    }
-
-    public void SendDirectMessage(string messageText)
-    {
-        StartCoroutine(SendDirectMessageCoroutine(messageText));
-    }
-
-    private IEnumerator SendDirectMessageCoroutine(string messageText)
-    {
-        var requestBody = new SendDirectMessageRequest
+        [Serializable]
+        private class SendDirectMessageRequest
         {
-            userId = Secrets.USER_ID_PEARLGREY,
-            messageText = messageText
-        };
-
-        var json = JsonUtility.ToJson(requestBody);
-        var bodyRaw = Encoding.UTF8.GetBytes(json);
-
-        using (var request = new UnityWebRequest(BaseUrl + "/send-dm", "POST"))
-        {
-            request.uploadHandler = new UploadHandlerRaw(bodyRaw);
-            request.downloadHandler = new DownloadHandlerBuffer();
-
-            request.SetRequestHeader("Content-Type", "application/json");
-
-            yield return request.SendWebRequest();
-
-            if (request.result != UnityWebRequest.Result.Success)
-            {
-                Debug.LogWarning("[DiscordClient] Send DM failed: " + request.error);
-            }
-            else
-            {
-                Debug.Log("[DiscordClient] DM sent successfully.");
-            }
+            [FormerlySerializedAs("UserId")]
+            public ulong userId;
+            [FormerlySerializedAs("MessageText")]
+            public string messageText;
         }
-    }
-
-    // =========================
-    // DATA STRUCTURES
-    // =========================
-
-    [Serializable]
-    private class IncomingDiscordMessage
-    {
-        [FormerlySerializedAs("UserId")]
-        public ulong userId;
-        [FormerlySerializedAs("Username")]
-        public string username;
-        [FormerlySerializedAs("MessageText")]
-        public string messageText;
-        [FormerlySerializedAs("ReceivedUtcIso8601")]
-        public string receivedUtcIso8601;
-    }
-
-    [Serializable]
-    private class IncomingDiscordMessageListWrapper
-    {
-        public IncomingDiscordMessage[] Messages;
-    }
-
-    [Serializable]
-    private class SendDirectMessageRequest
-    {
-        [FormerlySerializedAs("UserId")]
-        public ulong userId;
-        [FormerlySerializedAs("MessageText")]
-        public string messageText;
     }
 }
 
