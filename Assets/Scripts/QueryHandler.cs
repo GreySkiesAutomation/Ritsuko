@@ -12,6 +12,14 @@ namespace DefaultNamespace
     public class QueryHandler : MonoBehaviour
     {
         [Serializable]
+        private class ModelInputMessageEnvelope
+        {
+            public string local_time_austin;
+            public string current_query_source;
+            public string message;
+        }
+
+        [Serializable]
         public class ConversationMessage
         {
             public string Role;
@@ -60,6 +68,7 @@ namespace DefaultNamespace
 
         [Header("Dependencies")]
         [SerializeField] private SpeakAndEmoteController _speakAndEmoteController;
+
         [SerializeField] private OpenRouterChatClient _llmClient;
         [SerializeField] private DiscordClient _discordClient;
 
@@ -95,9 +104,12 @@ namespace DefaultNamespace
             "Rules:\n" +
             "- Return raw JSON only.\n" +
             "- Do not wrap JSON in markdown or code fences.\n" +
+            "- Do not return XML, tags, commentary, or explanatory text.\n" +
+            "- Conversation history messages may be formatted as JSON objects with fields like local_time_austin, current_query_source, and message.\n" +
+            "- Treat those fields as input metadata only; do not imitate that format in your reply.\n" +
             "- The 'reply' field must contain only the exact user-facing reply that should be spoken or sent.\n" +
-            "- Do not include metadata, XML-like tags, reasoning, notes, or explanations in 'reply'.\n" +
-            "- The current input source is provided in metadata as current_query_source.\n" +
+            "- Do not include metadata, reasoning, notes, or explanations in 'reply'.\n" +
+            "- The current input source is provided as current_query_source in the newest user message.\n" +
             "- If current_query_source is Microphone, keep 'reply' short, spoken-intended, and natural out loud, usually 1 short sentence.\n" +
             "- If current_query_source is Discord, 'reply' may be longer and may use Discord-friendly markdown formatting, but still stay concise and useful.\n" +
             "- If the user's message indicates the user wants to end the conversation, set conversationState to END.\n" +
@@ -261,22 +273,16 @@ namespace DefaultNamespace
 
         private string FormatMessageForModel(string content, string localTimestampDisplay, QuerySource? source)
         {
-            var formattedMessage =
-                "<metadata>\n" +
-                "local_time_austin=" + localTimestampDisplay + "\n";
+            var messageEnvelope = new ModelInputMessageEnvelope();
+            messageEnvelope.local_time_austin = localTimestampDisplay;
+            messageEnvelope.message = content;
 
             if (source.HasValue)
             {
-                formattedMessage += "current_query_source=" + source.Value + "\n";
+                messageEnvelope.current_query_source = source.Value.ToString();
             }
 
-            formattedMessage +=
-                "</metadata>\n" +
-                "<message>\n" +
-                content + "\n" +
-                "</message>";
-
-            return formattedMessage;
+            return JsonConvert.SerializeObject(messageEnvelope, Formatting.None);
         }
 
         private bool TryParseStructuredAssistantResponse(string rawResponse, out StructuredAssistantResponse structuredAssistantResponse)
@@ -347,30 +353,19 @@ namespace DefaultNamespace
 
         private string ExtractLikelyJsonObject(string rawResponse)
         {
+            if (string.IsNullOrWhiteSpace(rawResponse))
+            {
+                return null;
+            }
+
             var trimmedResponse = rawResponse.Trim();
 
-            if (trimmedResponse.StartsWith("```", StringComparison.Ordinal))
+            var firstBraceIndex = trimmedResponse.IndexOf('{');
+            var lastBraceIndex = trimmedResponse.LastIndexOf('}');
+
+            if (firstBraceIndex >= 0 && lastBraceIndex > firstBraceIndex)
             {
-                var firstBraceIndex = trimmedResponse.IndexOf('{');
-                var lastBraceIndex = trimmedResponse.LastIndexOf('}');
-
-                if (firstBraceIndex >= 0 && lastBraceIndex > firstBraceIndex)
-                {
-                    return trimmedResponse.Substring(firstBraceIndex, lastBraceIndex - firstBraceIndex + 1);
-                }
-            }
-
-            if (trimmedResponse.StartsWith("{", StringComparison.Ordinal) && trimmedResponse.EndsWith("}", StringComparison.Ordinal))
-            {
-                return trimmedResponse;
-            }
-
-            var openingBraceIndex = trimmedResponse.IndexOf('{');
-            var closingBraceIndex = trimmedResponse.LastIndexOf('}');
-
-            if (openingBraceIndex >= 0 && closingBraceIndex > openingBraceIndex)
-            {
-                return trimmedResponse.Substring(openingBraceIndex, closingBraceIndex - openingBraceIndex + 1);
+                return trimmedResponse.Substring(firstBraceIndex, lastBraceIndex - firstBraceIndex + 1);
             }
 
             return null;
