@@ -4,6 +4,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
+using DefaultNamespace;
 using NaughtyAttributes;
 using UnityEngine;
 using UnityEngine.Networking;
@@ -23,6 +24,9 @@ public class OpenAISpeechToText : MonoBehaviour
 
     [SerializeField] private int _recordingLengthSeconds = 120;
     [SerializeField] private int _recordingSampleRate = 16000;
+
+    [Header("Output")]
+    [SerializeField] private QueryHandler _queryHandler;
 
     [Header("Debug")]
     [SerializeField] private bool _logVerboseResponse = true;
@@ -284,6 +288,10 @@ public class OpenAISpeechToText : MonoBehaviour
             {
                 Debug.LogError("[OpenAIMicrophoneTranscriptionTester] Failed to parse transcription response.");
                 yield break;
+            }
+            else
+            {
+                _queryHandler.HandleNewMessage(transcriptionResponse.text);
             }
 
             Debug.Log("[OpenAIMicrophoneTranscriptionTester] Transcript: " + transcriptionResponse.text);

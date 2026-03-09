@@ -4025,6 +4025,7 @@ MonoBehaviour:
   _selectedMicrophoneDeviceName: Microphone (Wireless microphone)
   _recordingLengthSeconds: 30
   _recordingSampleRate: 16000
+  _queryHandler: {fileID: 1678536323}
   _logVerboseResponse: 1
   _isListeningIndicator: {fileID: 731437732}
 --- !u!1 &1907754658
@@ -4227,13 +4228,13 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
-      - m_Target: {fileID: 1902555309}
-        m_TargetAssemblyTypeName: UnityEngine.AudioSource, UnityEngine
-        m_MethodName: 
+      - m_Target: {fileID: 1902555311}
+        m_TargetAssemblyTypeName: OpenAISpeechToText, Assembly-CSharp
+        m_MethodName: StartListening
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: 
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
           m_IntArgument: 0
           m_FloatArgument: 0
           m_StringArgument: 

@@ -72,8 +72,8 @@ namespace DefaultNamespace
             "If time context matters, naturally refer to it like 'this morning' or 'late tonight' instead of repeating raw timestamps. ";
         
         private string _cleanerPrompt =
-            "You will be given a message that may contain metadata, timestamps, labels, or instructions mixed with the assistant's actual spoken reply. " +
-            "Return only the exact user-facing reply that should be spoken aloud. " +
+            "You will be given a message that may contain a timestamp the assistant's actual spoken reply. " +
+            "Return only the exact user-facing reply that should be spoken aloud. This can include instructions such as adding things to a to-do list. Just strip out the timestamp-related metadata" +
             "Do not add quotes, explanations, prefixes, or suffixes. " +
             "If the message is already clean, return it unchanged.\n\n" +
             "Message to clean:\n{message}";
