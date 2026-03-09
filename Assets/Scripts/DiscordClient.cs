@@ -22,7 +22,7 @@ public class DiscordClient : MonoBehaviour
     [SerializeField] private string _testMessageInputField;
 
     [Header("Polling")]
-    [SerializeField] private float _pollIntervalSeconds = 1f;
+    [SerializeField] private float _pollIntervalSeconds = 0.1f;
 
     [Header("Heartbeat")]
     [SerializeField] private float _heartbeatIntervalSeconds = 5f;
