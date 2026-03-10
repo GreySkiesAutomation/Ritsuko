@@ -12,7 +12,7 @@ namespace Runtime.Inputs.Presence
         [Serializable]
         private class PresenceStatusResponse
         {
-            public string presenceState;
+            public string presence;
         }
 
 
