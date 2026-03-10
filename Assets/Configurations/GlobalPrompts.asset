@@ -114,20 +114,24 @@ MonoBehaviour:
     respondToName: On\r\n\r\nIf the user indicates the conversation is finished,
     set conversationState to End. This should NOT change the mode to Chill however
     if the conversation is simply being ended.\r\n\r\nExamples:\r\n- \"That's all
-    for now\"\r\n- \"I'm done\"\r\n- \"Goodbye\"\r\n\r\nIf the user explicitly asks
-    to clear or reset conversation history, set conversationState to Reset.\r\n\r\nExamples:\r\n-
-    \"Reset conversation\"\r\n- \"Clear history\"\r\n\r\nIf conversationState is
-    Reset, the reply should say that you are resetting the conversation history.\r\n\r\nOtherwise
-    use Continue.\r\n\r\nDo not use any fields other than:\r\n- reply\r\n- conversationState\r\n-
-    mode\r\n- auditMode\r\n- quietMode\r\n- respondToName\r\n\r\nExample response
-    for a normal message with no setting changes:\r\n\r\n{\r\n  \"reply\": \"Sure,
-    let's do it.\",\r\n  \"conversationState\": \"Continue\",\r\n  \"mode\": \"NoChange\",\r\n 
-    \"auditMode\": \"NoChange\",\r\n  \"quietMode\": \"NoChange\",\r\n  \"respondToName\":
-    \"NoChange\"\r\n}\r\n\r\n\r\nYou must return ONLY valid JSON with exactly these
-    fields. Do not forget any fields:\r\n\r\n{\r\n  \"reply\": \"string\",\r\n  \"conversationState\":
-    \"Continue|End|Reset\",\r\n  \"mode\": \"Chill|ProductiveHobby|ProductiveWork|ProductiveDomestic|NoChange\",\r\n 
-    \"auditMode\": \"On|Off|NoChange\",\r\n  \"quietMode\": \"On|Off|NoChange\",\r\n 
-    \"respondToName\": \"On|Off|NoChange\"\r\n}"
+    for now\"\r\n- \"I'm done\"\r\n- \"Goodbye\"\r\n\nOne strange case is if the
+    user speaks a non-sequitor in a non-English language, it is likely that they
+    were silent and the SpeechToText misinterpreted the silence as a different language.
+    If this is the case, also set the conversationState to End.\n\r\nIf the user
+    explicitly asks to clear or reset conversation history, set conversationState
+    to Reset.\r\n\r\nExamples:\r\n- \"Reset conversation\"\r\n- \"Clear history\"\r\n\r\nIf
+    conversationState is Reset, the reply should say that you are resetting the conversation
+    history.\r\n\r\nOtherwise use Continue.\r\n\r\nDo not use any fields other than:\r\n-
+    reply\r\n- conversationState\r\n- mode\r\n- auditMode\r\n- quietMode\r\n- respondToName\r\n\r\nExample
+    response for a normal message with no setting changes:\r\n\r\n{\r\n  \"reply\":
+    \"Sure, let's do it.\",\r\n  \"conversationState\": \"Continue\",\r\n  \"mode\":
+    \"NoChange\",\r\n  \"auditMode\": \"NoChange\",\r\n  \"quietMode\": \"NoChange\",\r\n 
+    \"respondToName\": \"NoChange\"\r\n}\r\n\r\n\r\nYou must return ONLY valid JSON
+    with exactly these fields. Do not forget any fields:\r\n\r\n{\r\n  \"reply\":
+    \"string\",\r\n  \"conversationState\": \"Continue|End|Reset\",\r\n  \"mode\":
+    \"Chill|ProductiveHobby|ProductiveWork|ProductiveDomestic|NoChange\",\r\n  \"auditMode\":
+    \"On|Off|NoChange\",\r\n  \"quietMode\": \"On|Off|NoChange\",\r\n  \"respondToName\":
+    \"On|Off|NoChange\"\r\n}"
   ResponseInstructionsForSelf: 'This is not a message from the user, but from the
     assistant reflecting on the conversation history and asking the user about updates
     or progress on their tasks. Write a concise message that naturally fits into
