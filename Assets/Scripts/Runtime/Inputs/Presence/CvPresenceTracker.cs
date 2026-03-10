@@ -132,7 +132,7 @@ namespace Runtime.Inputs.Presence
                     yield break;
                 }
 
-                if (presenceStatusResponse == null || string.IsNullOrWhiteSpace(presenceStatusResponse.presenceState))
+                if (presenceStatusResponse == null || string.IsNullOrWhiteSpace(presenceStatusResponse.presence))
                 {
                     _lastError = "Response JSON did not include a valid presenceState field.";
 
@@ -145,7 +145,7 @@ namespace Runtime.Inputs.Presence
                     yield break;
                 }
 
-                var parsedPresenceState = ParsePresenceState(presenceStatusResponse.presenceState);
+                var parsedPresenceState = ParsePresenceState(presenceStatusResponse.presence);
                 SetPresenceState(parsedPresenceState);
             }
         }
