@@ -6,6 +6,9 @@ namespace Configuration
     [CreateAssetMenu(fileName = "New Global Configuration", menuName = "Ritsuko/GlobalConfiguration")]
     public class Configuration : ScriptableObject
     {
+        [Header("General")]
+        public float MinutesToAssumeUserWentToSleep = 120f;
+        
         [Header("Prompts")]
         public GlobalPromptConfiguration GlobalPromptConfiguration;
 
