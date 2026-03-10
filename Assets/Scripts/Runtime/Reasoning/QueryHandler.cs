@@ -278,8 +278,16 @@ namespace Runtime.Reasoning
 
                 if (_auditHistoryToDiscord)
                 {
-                    var auditMessage = $"**Spoken query from user:** \"{originalQuery}\"\n\n**Spoken response sent to user:** \"{cleanedResponse}\"";
-                    GlobalManager.I.DiscordClient.SendDirectMessage(auditMessage);
+                    if(source == QuerySource.AssistantSelf)
+                    {
+                        var auditMessage = $"**Proactive thought from myself:** \"{originalQuery}\"\n\n**Spoken prompt sent to user:** \"{cleanedResponse}\"";
+                        GlobalManager.I.DiscordClient.SendDirectMessage(auditMessage);
+                    }
+                    else
+                    {
+                        var auditMessage = $"**Spoken query from user:** \"{originalQuery}\"\n\n**Spoken response sent to user:** \"{cleanedResponse}\"";
+                        GlobalManager.I.DiscordClient.SendDirectMessage(auditMessage);
+                    }
                 }
             }
         }
