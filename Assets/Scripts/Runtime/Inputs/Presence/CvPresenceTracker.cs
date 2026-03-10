@@ -39,12 +39,12 @@ namespace Runtime.Inputs.Presence
 
         public event Action<PresenceState, PresenceState> PresenceStateChanged;
 
-        private void OnEnable()
+        public void Initialize()
         {
             StartPolling();
         }
 
-        private void OnDisable()
+        private void OnDestroy()
         {
             StopPolling();
         }

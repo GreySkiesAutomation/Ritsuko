@@ -3,6 +3,7 @@
 using Newtonsoft.Json;
 using Runtime.Avatar;
 using Runtime.Inputs.DirectText;
+using Runtime.Inputs.Presence;
 using Runtime.Inputs.SpeechToText;
 using Runtime.Reasoning;
 using Runtime.TextToSpeech;
@@ -44,6 +45,9 @@ namespace Runtime
 
         [SerializeField] private WakeWordSidecarClient _wakeWordSidecarClient;
         public WakeWordSidecarClient WakeWordSidecarClient => _wakeWordSidecarClient;
+        
+        [SerializeField] private CvPresenceTracker _cvPresenceTracker;
+        public CvPresenceTracker CvPresenceTracker => _cvPresenceTracker;
 
         [FormerlySerializedAs("_config")]
         [FormerlySerializedAs("_constants")]
@@ -75,7 +79,7 @@ namespace Runtime
             InitializeCursor();
             InitializePromptBuilder();
             LoadOrCreateGlobalState();
-
+            CvPresenceTracker.Initialize();
             QueryHandler.Initialize();
             MicrophoneInputController.Initialize();
 
