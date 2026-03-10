@@ -25,4 +25,4 @@ MonoBehaviour:
     is urgent (such as an upcoming robot combat tournament). You may tease the user
     in a slightly flirtatuous way too.
   ResponseInstructionAdditionsAllModes: 
-  ProactiveLoopbackTimeMinutes: 60
+  ProactiveLoopbackTimeMinutes: 30

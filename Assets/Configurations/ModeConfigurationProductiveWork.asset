@@ -22,4 +22,4 @@ MonoBehaviour:
     persona. Remind the user that business goals and employment are at stake if the
     user is being lazy or slacking off.
   ResponseInstructionAdditionsAllModes: 
-  ProactiveLoopbackTimeMinutes: 45
+  ProactiveLoopbackTimeMinutes: 30

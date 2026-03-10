@@ -2,10 +2,14 @@
 using NaughtyAttributes;
 using Runtime.Inputs.Presence;
 using Runtime.Reasoning.DataTypes;
+using UnityEngine;
 namespace Runtime.Behaviour
 {
     public class ProactiveAgencyController : PearlBehaviour
     {
+        [SerializeField]
+        private bool _testTimeEnabled = false;
+        
         private DateTime _lastTimeUserWasPrompted = DateTime.MinValue;
         public void Initialize()
         {
@@ -30,6 +34,11 @@ namespace Runtime.Behaviour
             }
 
             var userPromptCooldownMinutes = GlobalManager.I.Configuration.GetCurrentModePromptConfiguration().ProactiveLoopbackTimeMinutes;
+
+            if (_testTimeEnabled)
+            {
+                userPromptCooldownMinutes *= 0.2f;
+            }
 
             if (userPromptCooldownMinutes < 0f)
             {
