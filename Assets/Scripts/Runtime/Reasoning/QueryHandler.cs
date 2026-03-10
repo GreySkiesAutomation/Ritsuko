@@ -25,6 +25,9 @@ namespace Runtime.Reasoning
         private string _historyFileName => GlobalManager.I.Configuration.ConversationHistoryFileName;
 
         [Header("Stats")]
+        [SerializeField] private GameObject _thinkingIndicator;
+        
+        
         [ReadOnly]
         [SerializeField] private int _storedConversationMessageCount;
 
@@ -56,6 +59,8 @@ namespace Runtime.Reasoning
             OnAuditModeChangedEvent += OnAuditModeChanged;
             OnQuietModeChangedEvent += OnQuietModeChanged;
             OnRespondToNameChangedEvent += OnRespondToNameChanged;
+            
+            _thinkingIndicator.SetActive(false);
             
             SetInitialized();
         }
@@ -102,6 +107,8 @@ namespace Runtime.Reasoning
                 StructuredAssistantResponse structuredAssistantResponse = null;
                 string rawResponse = null;
 
+                _thinkingIndicator.SetActive(true);
+                
                 for (var attemptIndex = 0; attemptIndex < _maxJsonParseAttempts; attemptIndex++)
                 {
                     rawResponse = await GlobalManager.I.LlmClient.SendPromptAsync(outboundMessageHistory, GlobalManager.I.Configuration.LlmModelStandard);
@@ -114,6 +121,8 @@ namespace Runtime.Reasoning
 
                     LogWarning("[QueryHandler] Failed to parse structured LLM response on attempt " + (attemptIndex + 1) + ".");
                 }
+                
+                _thinkingIndicator.SetActive(false);
 
                 if (structuredAssistantResponse == null)
                 {
