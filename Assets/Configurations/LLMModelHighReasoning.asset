@@ -12,6 +12,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5b871687e53146999546327dd92c5c5c, type: 3}
   m_Name: LLMModelHighReasoning
   m_EditorClassIdentifier: 
-  Model: openai/gpt-4o-mini
+  Model: openai/gpt-5.4
   Temperature: 0.7
   MaxTokens: 65536
