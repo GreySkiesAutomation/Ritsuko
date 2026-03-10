@@ -21,4 +21,4 @@ MonoBehaviour:
     reduces the risk of emergency expenses. Maintaining cleanliness is good for health
     and stress.
   ResponseInstructionAdditionsAllModes: 
-  ProactiveLoopbackTimeMinutes: 30
+  ProactiveLoopbackTimeMinutes: 60
