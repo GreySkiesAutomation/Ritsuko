@@ -3987,6 +3987,7 @@ MonoBehaviour:
   _ttsPlayer: {fileID: 950164879}
   _queryHandler: {fileID: 1678536323}
   _wakeWordSidecarClient: {fileID: 1915740746}
+  _cvPresenceTracker: {fileID: 1013809937}
   _configuration: {fileID: 11400000, guid: 4fde08eb4c28556468c0f8b66782470a, type: 2}
 --- !u!1 &1432921430
 GameObject:
