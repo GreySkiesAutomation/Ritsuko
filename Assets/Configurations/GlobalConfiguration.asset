@@ -42,3 +42,6 @@ MonoBehaviour:
   SpeechAmplitudeThreshold: 0.06
   SpeechEndDetectionSeconds: 5
   AmplitudeSampleWindowSizePerChannel: 1024
+  CVStatusUrl: http://127.0.0.1:8002/presence
+  CVPollIntervalSeconds: 1
+  CVPollRequestTimeoutSeconds: 2
