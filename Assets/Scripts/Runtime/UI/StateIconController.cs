@@ -2,6 +2,7 @@
 using Configuration;
 using Runtime.Inputs.Presence;
 using UnityEngine;
+using UnityEngine.Serialization;
 namespace Runtime.UI
 {
     public class StateIconController : PearlBehaviour
@@ -14,6 +15,9 @@ namespace Runtime.UI
 
         [SerializeField]
         private GameObject _modeChillIcon;
+        
+        [SerializeField]
+        private GameObject _modeDomesticIcon;
 
         [SerializeField]
         private GameObject _quietModeEnabledIcon;
@@ -42,11 +46,16 @@ namespace Runtime.UI
         [SerializeField]
         private GameObject _presenceUnknownIcon;
 
+        private void Start()
+        {
+            SetInitialized();
+        }
         private void Update()
         {
             _modeProductiveWorkIcon.SetActive(GlobalManager.I.State.CurrentMode == BehaviourMode.ProductiveWork);
             _modeProductiveHobbyIcon.SetActive(GlobalManager.I.State.CurrentMode == BehaviourMode.ProductiveHobby);
             _modeChillIcon.SetActive(GlobalManager.I.State.CurrentMode == BehaviourMode.Chill);
+            _modeDomesticIcon.SetActive(GlobalManager.I.State.CurrentMode == BehaviourMode.ProductiveDomestic);
 
             _quietModeEnabledIcon.SetActive(GlobalManager.I.State.QuietModeEnabled);
             _quietModeDisabledIcon.SetActive(!GlobalManager.I.State.QuietModeEnabled);

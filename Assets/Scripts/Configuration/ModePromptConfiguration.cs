@@ -14,5 +14,7 @@ namespace Configuration
 
         [TextArea(10, 50)]
         public string ResponseInstructionAdditionsAllModes;
+        
+        public float ProactiveLoopbackTimeMinutes = 30f;
     }
 }

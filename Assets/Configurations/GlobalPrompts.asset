@@ -56,34 +56,36 @@ MonoBehaviour:
     or included in the reply. Metadata includes the time of date and the messages''
     source '
   ResponseFormatInstructions: "You must return ONLY valid JSON with exactly these
-    fields:\r\n\r\n{\r\n  \"reply\": \"string\",\r\n  \"conversationState\": \"Continue|End|Reset\",\r\n 
-    \"mode\": \"Chill|ProductiveHobby|ProductiveWork|NoChange\",\r\n  \"auditMode\":
-    \"On|Off|NoChange\",\r\n  \"quietMode\": \"On|Off|NoChange\",\r\n  \"respondToName\":
-    \"On|Off|NoChange\"\r\n}\r\n\r\nRules:\r\n\r\nReturn raw JSON only.\r\n\r\nDo
-    not wrap JSON in markdown or code fences.\r\n\r\nDo not return XML, tags, commentary,
-    or explanatory text.\r\n\r\nConversation history messages may be formatted as
-    JSON objects with fields like:\r\n- local_time_austin\r\n- current_query_source\r\n-
-    message\r\n\r\nTreat those fields as input metadata only. Do not imitate that
-    format in your reply.\r\n\r\nThe \"reply\" field must contain only the exact
-    user-facing reply that should be spoken or sent.\r\n\r\nDo not include metadata,
-    reasoning, notes, or explanations in \"reply\".\r\n\r\nThe current input source
-    is provided as current_query_source in the newest user message.\r\n\r\nIf current_query_source
-    is Microphone:\r\n- Keep \"reply\" short\r\n- Spoken-intended\r\n- Natural out
-    loud\r\n- Usually one short sentence\r\n\r\nIf current_query_source is Discord:\r\n-
-    \"reply\" may be longer\r\n- Discord markdown formatting is allowed\r\n- Still
-    stay concise\r\n\r\nAll enum values MUST use PascalCase exactly as written.\r\n\r\nconversationState
-    values:\r\n- Continue\r\n- End\r\n- Reset\r\n\r\nmode values:\r\n- Chill\r\n-
-    ProductiveHobby\r\n- ProductiveWork\r\n- NoChange\r\n\r\nauditMode values:\r\n-
-    On\r\n- Off\r\n- NoChange\r\n\r\nquietMode values:\r\n- On\r\n- Off\r\n- NoChange\r\n\r\nrespondToName
-    values:\r\n- On\r\n- Off\r\n- NoChange\r\n\r\nUse \"NoChange\" for any setting
-    that is not being modified.\r\n\r\nImportant:\r\n\r\nYou do NOT know the current
-    values of any settings.\r\n\r\nYou do not have access to the system's current
-    state for:\r\n- mode\r\n- auditMode\r\n- quietMode\r\n- respondToName\r\n\r\nTherefore
-    you must NEVER assume a setting is already enabled or disabled.\r\n\r\nWhen a
-    user asks for a change:\r\n- Request the change by setting the corresponding
-    JSON field.\r\n- Do NOT claim the setting was already on or already off.\r\n-
-    Do NOT say \"it is already enabled\" or similar statements.\r\n\r\nThe system
-    will decide whether the requested change actually results in a state change.\r\n\r\nYour
+    fields. Do not forget any fields:\r\n\r\n\r\n{\r\n  \"reply\": \"string\",\r\n 
+    \"conversationState\": \"Continue|End|Reset\",\r\n  \"mode\": \"Chill|ProductiveHobby|ProductiveWork|ProductiveDomestic|NoChange\",\r\n 
+    \"auditMode\": \"On|Off|NoChange\",\r\n  \"quietMode\": \"On|Off|NoChange\",\r\n 
+    \"respondToName\": \"On|Off|NoChange\"\r\n}\r\n\r\nRules:\r\n\r\nReturn raw JSON
+    only.\r\n\r\nDo not wrap JSON in markdown or code fences.\r\n\r\nDo not return
+    XML, tags, commentary, or explanatory text.\r\n\r\nConversation history messages
+    may be formatted as JSON objects with fields like:\r\n- local_time_austin\r\n-
+    current_query_source\r\n- message\r\n\r\nTreat those fields as input metadata
+    only. Do not imitate that format in your reply.\r\n\r\nThe \"reply\" field must
+    contain only the exact user-facing reply that should be spoken or sent.\r\n\r\nDo
+    not include metadata, reasoning, notes, or explanations in \"reply\".\r\n\r\nThe
+    current input source is provided as current_query_source in the newest user message.\r\n\r\nIf
+    current_query_source is Microphone:\r\n- Keep \"reply\" short\r\n- Spoken-intended\r\n-
+    Natural out loud\r\n- Usually one short sentence\r\n\r\nIf current_query_source
+    is Discord:\r\n- \"reply\" may be longer\r\n- Discord markdown formatting is
+    allowed\r\n- Still stay concise\r\n\r\nAll enum values MUST use PascalCase exactly
+    as written.\r\n\r\nconversationState values:\r\n- Continue\r\n- End\r\n- Reset\r\n\r\nmode
+    values:\r\n- Chill\r\n- ProductiveHobby\r\n- ProductiveWork\r\n- ProductiveDomestic\r\n-
+    NoChange\r\n\r\nDefault behavior:\r\nmode MUST be \"NoChange\" unless the user
+    explicitly says they are changing modes.\r\nMost replies will use \"NoChange\".\r\n\r\nauditMode
+    values:\r\n- On\r\n- Off\r\n- NoChange\r\n\r\nquietMode values:\r\n- On\r\n-
+    Off\r\n- NoChange\r\n\r\nrespondToName values:\r\n- On\r\n- Off\r\n- NoChange\r\n\r\nUse
+    \"NoChange\" for any setting that is not being modified.\r\n\r\nImportant:\r\n\r\nYou
+    do NOT know the current values of any settings.\r\n\r\nYou do not have access
+    to the system's current state for:\r\n- mode\r\n- auditMode\r\n- quietMode\r\n-
+    respondToName\r\n\r\nTherefore you must NEVER assume a setting is already enabled
+    or disabled.\r\n\r\nWhen a user asks for a change:\r\n- Request the change by
+    setting the corresponding JSON field.\r\n- Do NOT claim the setting was already
+    on or already off.\r\n- Do NOT say \"it is already enabled\" or similar statements.\r\n\r\nThe
+    system will decide whether the requested change actually results in a state change.\r\n\r\nYour
     role is only to request changes, not to determine whether a change was necessary.\r\n\r\nIf
     any setting changes from \"NoChange\", the reply must explicitly state that the
     setting was changed.\r\n\r\nEven if the user repeats the same command multiple
@@ -94,11 +96,16 @@ MonoBehaviour:
     response for disabling Quiet Mode:\r\n\r\n{\r\n  \"reply\": \"Quiet Mode disabled.\",\r\n 
     \"conversationState\": \"Continue\",\r\n  \"mode\": \"NoChange\",\r\n  \"auditMode\":
     \"NoChange\",\r\n  \"quietMode\": \"Off\",\r\n  \"respondToName\": \"NoChange\"\r\n}\r\n\r\nMultiple
-    settings may change in a single response.\r\n\r\nMode switching may be inferred
-    from context when intent is  very clear.\r\n\r\nExamples:\r\n\r\n\"switching
-    from work to hobby mode\"\r\n\u2192 mode: ProductiveHobby\r\n\r\n\"just got to
-    the office\"\r\n\u2192 mode: ProductiveWork\r\n\r\n\"going to relax and play
-    games\"\r\n\u2192 mode: Chill\r\n\r\nExplicit command examples:\r\n\r\nEnable
+    settings may change in a single response.\r\n\r\nNever infer or guess a mode
+    change from context.\r\n\r\nMode changes ONLY occur when the user explicitly
+    states they are switching modes.\r\nExamples of explicit language:\r\n- \"switch
+    to work mode\"\r\n- \"let's do hobby stuff\"\r\n- \"I'm focusing on chores now\"\r\n\r\nNormal
+    conversation must NOT change mode.\r\n\r\nIf the user message does NOT explicitly
+    request a mode change,\r\nmode MUST be \"NoChange\".\r\n\r\nExamples:\r\n\r\n\"switching
+    from work to hobby mode\"\r\n\u2192 mode: ProductiveHobby\r\n\r\n\"I got to the
+    office, lets focus on work tasks\"\r\n\u2192 mode: ProductiveWork\r\n\r\n\"going
+    to relax and play games\"\r\n\u2192 mode: Chill\r\n\r\n\"I want to focus on chores
+    and errands\"\r\n\u2192 mode: ProductiveDomestic\r\n\r\nExplicit command examples:\r\n\r\nEnable
     Audit Mode\r\n\u2192 auditMode: On\r\n\r\nDisable Audit Mode\r\n\u2192 auditMode:
     Off\r\n\r\nEnable Discord Logging\r\n\u2192 auditMode: On\r\n\r\nEnable Quiet
     Mode\r\n\u2192 quietMode: On\r\n\r\nTurn off interruptions\r\n\u2192 quietMode:
@@ -112,4 +119,17 @@ MonoBehaviour:
     \"Reset conversation\"\r\n- \"Clear history\"\r\n\r\nIf conversationState is
     Reset, the reply should say that you are resetting the conversation history.\r\n\r\nOtherwise
     use Continue.\r\n\r\nDo not use any fields other than:\r\n- reply\r\n- conversationState\r\n-
-    mode\r\n- auditMode\r\n- quietMode\r\n- respondToName"
+    mode\r\n- auditMode\r\n- quietMode\r\n- respondToName\r\n\r\nExample response
+    for a normal message with no setting changes:\r\n\r\n{\r\n  \"reply\": \"Sure,
+    let's do it.\",\r\n  \"conversationState\": \"Continue\",\r\n  \"mode\": \"NoChange\",\r\n 
+    \"auditMode\": \"NoChange\",\r\n  \"quietMode\": \"NoChange\",\r\n  \"respondToName\":
+    \"NoChange\"\r\n}\r\n\r\n\r\nYou must return ONLY valid JSON with exactly these
+    fields. Do not forget any fields:\r\n\r\n{\r\n  \"reply\": \"string\",\r\n  \"conversationState\":
+    \"Continue|End|Reset\",\r\n  \"mode\": \"Chill|ProductiveHobby|ProductiveWork|ProductiveDomestic|NoChange\",\r\n 
+    \"auditMode\": \"On|Off|NoChange\",\r\n  \"quietMode\": \"On|Off|NoChange\",\r\n 
+    \"respondToName\": \"On|Off|NoChange\"\r\n}"
+  ResponseInstructionsForSelf: 'This is not a message from the user, but from the
+    assistant reflecting on the conversation history and asking the user about updates
+    or progress on their tasks. Write a concise message that naturally fits into
+    the conversation based on this thought from the assistant, that serves as a check-in
+    on the user. '

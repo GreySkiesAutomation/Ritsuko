@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using Runtime;
+using UnityEngine;
 using UnityEngine.Serialization;
 namespace Configuration
 {
@@ -59,6 +60,19 @@ namespace Configuration
         public string CVStatusUrl = "http://127.0.0.1:8002/presence";
         public float CVPollIntervalSeconds = 1.0f;
         public float CVPollRequestTimeoutSeconds = 2.0f;
+
+        public ModePromptConfiguration GetCurrentModePromptConfiguration()
+        {
+            foreach(var modePromptConfiguration in ModePromptConfigurations)
+            {
+                if (modePromptConfiguration.BehaviourMode == GlobalManager.I.State.CurrentMode)
+                {
+                    return modePromptConfiguration;
+                }
+            }
+            
+            return DefaultModePromptConfiguration;
+        }
 
     }
 }

@@ -125,6 +125,11 @@ namespace Runtime.Reasoning
                 return globalConfiguration.ResponseInstructionsForSpeech;
             }
 
+            if (querySource == QuerySource.AssistantSelf)
+            {
+                return globalConfiguration.ResponseInstructionsForSelf;
+            }
+
             return null;
         }
 

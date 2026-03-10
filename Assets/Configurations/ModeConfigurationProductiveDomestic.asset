@@ -1,0 +1,23 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5e3e6b74be3e402a958d98003519ad3b, type: 3}
+  m_Name: ModeConfigurationProductiveDomestic
+  m_EditorClassIdentifier: 
+  BehaviourMode: 3
+  ModeContext: In this mode, the user is focused on home/domestic tasks. These can
+    include things such as grocery shopping, home maintainance, taking out the trash,
+    fixing a vehicle, and other chores/errands and life-obligations-related tasks.
+  PersonalityAdditions: Remind the user that a well maintained home lowers the user's
+    stress. Grocery shopping helps prevent spending extra money eating out. Maintanance
+    reduces the risk of emergency expenses. Maintaining cleanliness is good for health
+    and stress.
+  ResponseInstructionAdditionsAllModes: 

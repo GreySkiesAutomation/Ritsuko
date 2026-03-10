@@ -14,4 +14,4 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   Model: openai/gpt-4o-mini
   Temperature: 0.7
-  MaxTokens: 4096
+  MaxTokens: 65536

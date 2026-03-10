@@ -100,5 +100,28 @@ namespace Runtime
                 _onChanged?.Invoke();
             }
         }
+        
+        private DateTime _lastTimeUserInteracted = DateTime.MinValue;
+
+        public void SetLastTimeUserInteractedToNow()
+        {
+            LastTimeUserInteracted = DateTime.UtcNow;
+        }
+        
+        public float MinutesSinceLastUserInteraction => (float)(DateTime.UtcNow - _lastTimeUserInteracted).TotalMinutes;
+        public DateTime LastTimeUserInteracted
+        {
+            get => _lastTimeUserInteracted;
+            set
+            {
+                if (_lastTimeUserInteracted == value)
+                {
+                    return;
+                }
+
+                _lastTimeUserInteracted = value;
+                _onChanged?.Invoke();
+            }
+        }
     }
 }

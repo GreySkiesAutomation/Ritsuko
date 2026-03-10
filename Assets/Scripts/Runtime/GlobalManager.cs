@@ -2,6 +2,7 @@
 
 using Newtonsoft.Json;
 using Runtime.Avatar;
+using Runtime.Behaviour;
 using Runtime.Inputs.DirectText;
 using Runtime.Inputs.Presence;
 using Runtime.Inputs.SpeechToText;
@@ -48,6 +49,11 @@ namespace Runtime
         
         [SerializeField] private CvPresenceTracker _cvPresenceTracker;
         public CvPresenceTracker CvPresenceTracker => _cvPresenceTracker;
+        
+        [SerializeField]
+        private ProactiveAgencyController _proactiveAgencyController;
+        
+        public ProactiveAgencyController ProactiveAgencyController => _proactiveAgencyController;
 
         [FormerlySerializedAs("_config")]
         [FormerlySerializedAs("_constants")]
@@ -81,6 +87,7 @@ namespace Runtime
             LoadOrCreateGlobalState();
             CvPresenceTracker.Initialize();
             QueryHandler.Initialize();
+            ProactiveAgencyController.Initialize();
             MicrophoneInputController.Initialize();
 
             SetInitialized();

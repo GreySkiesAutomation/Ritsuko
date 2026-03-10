@@ -59,5 +59,9 @@ namespace Configuration
                                                    "- Otherwise use CONTINUE.\n" +
                                                    "- If conversationState is RESET, the reply should say that you are resetting the message history.\n" +
                                                    "- Do not use any fields other than 'reply' and 'conversationState'.";
+
+        [TextArea(10, 50)]
+        public string ResponseInstructionsForSelf = "This is not a message from the user, but from the assistant reflecting on the conversation history and asking the user about updates" +
+                                                    " or progress on their tasks. Write a concise message that naturally fits into the conversation based on this thought from the assistant, that serves as a check-in on the user. ";
     }
 }

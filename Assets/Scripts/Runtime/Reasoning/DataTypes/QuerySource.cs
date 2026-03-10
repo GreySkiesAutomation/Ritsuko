@@ -3,6 +3,7 @@
     public enum QuerySource
     {
         Speech,
-        Discord
+        Discord,
+        AssistantSelf
     }
 }

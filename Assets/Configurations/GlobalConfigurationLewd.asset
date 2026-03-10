@@ -18,6 +18,7 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 5e94ae9164db748439fa03b746eefdb6, type: 2}
   - {fileID: 11400000, guid: 339092070c704cb4fa61637fd4199b30, type: 2}
   - {fileID: 11400000, guid: 43a756f4d5a81934bbd72f2fbccfee13, type: 2}
+  - {fileID: 11400000, guid: 5be7d31c260b19c45a75633de5854421, type: 2}
   WakeWordHostIpAddress: 127.0.0.1
   WakeWordHostPort: 17777
   DiscordSidecarBaseUrlAndPort: http://127.0.0.1:5099
@@ -42,3 +43,6 @@ MonoBehaviour:
   SpeechAmplitudeThreshold: 0.06
   SpeechEndDetectionSeconds: 5
   AmplitudeSampleWindowSizePerChannel: 1024
+  CVStatusUrl: http://127.0.0.1:8002/presence
+  CVPollIntervalSeconds: 1
+  CVPollRequestTimeoutSeconds: 2

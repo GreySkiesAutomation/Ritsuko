@@ -89,6 +89,11 @@ namespace Runtime.Reasoning
 
             Log("[QueryHandler] Received new message: " + messageContent);
 
+            if (source != QuerySource.AssistantSelf)
+            {
+                GlobalManager.I.State.SetLastTimeUserInteractedToNow();
+            }
+
             try
             {
                 var userTimestamp = TimeUtility.GetCurrentLocalAustinTimeDisplay();
@@ -195,6 +200,9 @@ namespace Runtime.Reasoning
                 case AssistantModeResponse.ProductiveWork:
                     GlobalManager.I.State.CurrentMode = BehaviourMode.ProductiveWork;
                     break;
+                case AssistantModeResponse.ProductiveDomestic:
+                    GlobalManager.I.State.CurrentMode = BehaviourMode.ProductiveDomestic;
+                    break;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(newMode), newMode, null);
             }
@@ -264,7 +272,7 @@ namespace Runtime.Reasoning
             {
                 GlobalManager.I.DiscordClient.SendDirectMessage(cleanedResponse);
             }
-            else if (source == QuerySource.Speech)
+            else if (source == QuerySource.Speech || source == QuerySource.AssistantSelf)
             {
                 GlobalManager.I.SpeakAndEmoteController.SendPhraseAndGetEmotion(cleanedResponse, promptAfterwards);
 
@@ -316,10 +324,17 @@ namespace Runtime.Reasoning
 
         private string FormatMessageForModel(string content, string localTimestampDisplay, QuerySource? source)
         {
+            string messagePrefix = "";
+
+            if (source == QuerySource.AssistantSelf)
+            {
+                messagePrefix = "[This message is from the assistant speaking to itself as part of internal reflection and trying to thing of something to ask the user proactively]\n\n";
+            }
+            
             var messageEnvelope = new ModelInputMessageEnvelope
             {
                 local_time_austin = localTimestampDisplay,
-                message = content
+                message = messagePrefix + content
             };
 
             if (source.HasValue)
@@ -636,7 +651,8 @@ namespace Runtime.Reasoning
             NoChange,
             Chill,
             ProductiveHobby,
-            ProductiveWork
+            ProductiveWork,
+            ProductiveDomestic
         }
 
         [JsonConverter(typeof(StringEnumConverter))]

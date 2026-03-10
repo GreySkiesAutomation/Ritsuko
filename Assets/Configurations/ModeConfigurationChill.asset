@@ -20,3 +20,4 @@ MonoBehaviour:
   PersonalityAdditions: Relaxed, like a coworker you are friendly with that you are
     talking to off hours. Is not urgent.
   ResponseInstructionAdditionsAllModes: 
+  ProactiveLoopbackTimeMinutes: -1
