@@ -2,6 +2,7 @@
 
 using System;
 using Configuration;
+using Runtime.Inputs.Presence;
 
 namespace Runtime
 {
@@ -16,12 +17,13 @@ namespace Runtime
         }
 
         private BehaviourMode _currentMode = BehaviourMode.ProductiveWork;
+
         public BehaviourMode CurrentMode
         {
             get => _currentMode;
             set
             {
-                if(_currentMode == value)
+                if (_currentMode == value)
                 {
                     return;
                 }
@@ -32,12 +34,13 @@ namespace Runtime
         }
 
         private bool _auditModeEnabled = true;
+
         public bool AuditModeEnabled
         {
             get => _auditModeEnabled;
             set
             {
-                if(_auditModeEnabled == value)
+                if (_auditModeEnabled == value)
                 {
                     return;
                 }
@@ -48,12 +51,13 @@ namespace Runtime
         }
 
         private bool _quietModeEnabled = false;
+
         public bool QuietModeEnabled
         {
             get => _quietModeEnabled;
             set
             {
-                if(_quietModeEnabled == value)
+                if (_quietModeEnabled == value)
                 {
                     return;
                 }
@@ -64,17 +68,35 @@ namespace Runtime
         }
 
         private bool _respondToNameEnabled = true;
+
         public bool RespondToNameEnabled
         {
             get => _respondToNameEnabled;
             set
             {
-                if(_respondToNameEnabled == value)
+                if (_respondToNameEnabled == value)
                 {
                     return;
                 }
 
                 _respondToNameEnabled = value;
+                _onChanged?.Invoke();
+            }
+        }
+
+        private PresenceState _presenceState = PresenceState.Unknown;
+
+        public PresenceState PresenceState
+        {
+            get => _presenceState;
+            set
+            {
+                if (_presenceState == value)
+                {
+                    return;
+                }
+
+                _presenceState = value;
                 _onChanged?.Invoke();
             }
         }
