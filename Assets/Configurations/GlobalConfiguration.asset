@@ -12,6 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 58e7bbfa702a4addb57b2b2284f0ae27, type: 3}
   m_Name: GlobalConfiguration
   m_EditorClassIdentifier: 
+  MinutesToAssumeUserWentToSleep: 120
   GlobalPromptConfiguration: {fileID: 11400000, guid: 6754cd32fe53b4b42a1b5d938fda0bd0, type: 2}
   DefaultModePromptConfiguration: {fileID: 11400000, guid: 583a6d9d73e65774b9e48a52a514013e, type: 2}
   ModePromptConfigurations:
