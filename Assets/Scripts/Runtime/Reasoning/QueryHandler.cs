@@ -2,7 +2,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.IO;
 using Configuration;
 using NaughtyAttributes;
@@ -26,8 +25,7 @@ namespace Runtime.Reasoning
 
         [Header("Stats")]
         [SerializeField] private GameObject _thinkingIndicator;
-        
-        
+
         [ReadOnly]
         [SerializeField] private int _storedConversationMessageCount;
 
@@ -54,17 +52,17 @@ namespace Runtime.Reasoning
         {
             LoadHistoryFromDisk();
             RefreshStats();
-            
+
             OnModeChangedEvent += OnModeChanged;
             OnAuditModeChangedEvent += OnAuditModeChanged;
             OnQuietModeChangedEvent += OnQuietModeChanged;
             OnRespondToNameChangedEvent += OnRespondToNameChanged;
-            
+
             _thinkingIndicator.SetActive(false);
-            
+
             SetInitialized();
         }
-        
+
         public void OnDestroy()
         {
             OnModeChangedEvent -= OnModeChanged;
@@ -99,19 +97,23 @@ namespace Runtime.Reasoning
                 GlobalManager.I.State.SetLastTimeUserInteractedToNow();
             }
 
+            StructuredAssistantResponse structuredAssistantResponse = null;
+
             try
             {
                 var userTimestamp = TimeUtility.GetCurrentLocalAustinTimeDisplay();
                 var outboundMessageHistory = BuildOutboundMessageHistory(messageContent, userTimestamp, source);
 
-                StructuredAssistantResponse structuredAssistantResponse = null;
                 string rawResponse = null;
 
                 _thinkingIndicator.SetActive(true);
-                
+
                 for (var attemptIndex = 0; attemptIndex < _maxJsonParseAttempts; attemptIndex++)
                 {
-                    rawResponse = await GlobalManager.I.LlmClient.SendPromptAsync(outboundMessageHistory, GlobalManager.I.Configuration.LlmModelStandard);
+                    rawResponse = await GlobalManager.I.LlmClient.SendPromptAsync(
+                        outboundMessageHistory,
+                        GlobalManager.I.Configuration.LlmModelStandard);
+
                     Log("[QueryHandler] Raw LLM response attempt " + (attemptIndex + 1) + ": " + rawResponse);
 
                     if (TryParseStructuredAssistantResponse(rawResponse, out structuredAssistantResponse))
@@ -121,8 +123,6 @@ namespace Runtime.Reasoning
 
                     LogWarning("[QueryHandler] Failed to parse structured LLM response on attempt " + (attemptIndex + 1) + ".");
                 }
-                
-                _thinkingIndicator.SetActive(false);
 
                 if (structuredAssistantResponse == null)
                 {
@@ -145,6 +145,7 @@ namespace Runtime.Reasoning
 
                 SendResponseToSource(
                     structuredAssistantResponse.reply,
+                    structuredAssistantResponse.Emotion,
                     messageContent,
                     source,
                     structuredAssistantResponse.ConversationState != AssistantConversationState.End);
@@ -157,6 +158,10 @@ namespace Runtime.Reasoning
             catch (Exception exception)
             {
                 LogError("[QueryHandler] Error processing message: " + exception);
+            }
+            finally
+            {
+                _thinkingIndicator.SetActive(false);
             }
         }
 
@@ -191,11 +196,11 @@ namespace Runtime.Reasoning
                 OnRespondToNameChangedEvent?.Invoke(structuredAssistantResponse.RespondToName);
             }
         }
-        
+
         private void OnModeChanged(AssistantModeResponse newMode)
         {
-            // TODO-RPB: Implement mode changes.
             Log("[QueryHandler] Mode change requested: " + newMode);
+
             switch (newMode)
             {
                 case AssistantModeResponse.NoChange:
@@ -216,7 +221,7 @@ namespace Runtime.Reasoning
                     throw new ArgumentOutOfRangeException(nameof(newMode), newMode, null);
             }
         }
-        
+
         private void OnAuditModeChanged(AssistantToggleResponse newAuditMode)
         {
             Log("[QueryHandler] Audit mode change requested: " + newAuditMode);
@@ -235,11 +240,11 @@ namespace Runtime.Reasoning
                     throw new ArgumentOutOfRangeException(nameof(newAuditMode), newAuditMode, null);
             }
         }
-        
+
         private void OnQuietModeChanged(AssistantToggleResponse newQuietMode)
         {
             Log("[QueryHandler] Quiet mode change requested: " + newQuietMode);
-            
+
             switch (newQuietMode)
             {
                 case AssistantToggleResponse.NoChange:
@@ -254,7 +259,7 @@ namespace Runtime.Reasoning
                     throw new ArgumentOutOfRangeException(nameof(newQuietMode), newQuietMode, null);
             }
         }
-        
+
         private void OnRespondToNameChanged(AssistantToggleResponse newRespondToName)
         {
             Log("[QueryHandler] Respond to name change requested: " + newRespondToName);
@@ -273,28 +278,36 @@ namespace Runtime.Reasoning
                     throw new ArgumentOutOfRangeException(nameof(newRespondToName), newRespondToName, null);
             }
         }
-        
 
-        private void SendResponseToSource(string cleanedResponse, string originalQuery, QuerySource source, bool promptAfterwards)
+        private void SendResponseToSource(
+            string cleanedResponse,
+            AssistantEmotionResponse emotion,
+            string originalQuery,
+            QuerySource source,
+            bool promptAfterwards)
         {
             if (source == QuerySource.Discord)
             {
                 GlobalManager.I.DiscordClient.SendDirectMessage(cleanedResponse);
+                return;
             }
-            else if (source == QuerySource.Speech || source == QuerySource.AssistantSelf)
+
+            if (source == QuerySource.Speech || source == QuerySource.AssistantSelf)
             {
-                GlobalManager.I.SpeakAndEmoteController.SendPhraseAndGetEmotion(cleanedResponse, promptAfterwards);
+                GlobalManager.I.SpeakAndEmoteController.SendPhraseAndEmotion(cleanedResponse, emotion, promptAfterwards);
 
                 if (_auditHistoryToDiscord)
                 {
-                    if(source == QuerySource.AssistantSelf)
+                    if (source == QuerySource.AssistantSelf)
                     {
-                        var auditMessage = $"**Proactive thought from myself:** \"{originalQuery}\"\n\n**Spoken prompt sent to user:** \"{cleanedResponse}\"";
+                        var auditMessage =
+                            $"**Proactive thought from myself:** \"{originalQuery}\"\n\n**Emotion:** {emotion}\n\n**Spoken prompt sent to user:** \"{cleanedResponse}\"";
                         GlobalManager.I.DiscordClient.SendDirectMessage(auditMessage);
                     }
                     else
                     {
-                        var auditMessage = $"**Spoken query from user:** \"{originalQuery}\"\n\n**Spoken response sent to user:** \"{cleanedResponse}\"";
+                        var auditMessage =
+                            $"**Spoken query from user:** \"{originalQuery}\"\n\n**Emotion:** {emotion}\n\n**Spoken response sent to user:** \"{cleanedResponse}\"";
                         GlobalManager.I.DiscordClient.SendDirectMessage(auditMessage);
                     }
                 }
@@ -341,13 +354,13 @@ namespace Runtime.Reasoning
 
         private string FormatMessageForModel(string content, string localTimestampDisplay, QuerySource? source)
         {
-            string messagePrefix = "";
+            var messagePrefix = "";
 
             if (source == QuerySource.AssistantSelf)
             {
-                messagePrefix = "[This message is from the assistant speaking to itself as part of internal reflection and trying to thing of something to ask the user proactively]\n\n";
+                messagePrefix = "[This message is from the assistant speaking to itself as part of internal reflection and trying to think of something to ask the user proactively]\n\n";
             }
-            
+
             var messageEnvelope = new ModelInputMessageEnvelope
             {
                 local_time_austin = localTimestampDisplay,
@@ -680,6 +693,17 @@ namespace Runtime.Reasoning
             Off
         }
 
+        [JsonConverter(typeof(StringEnumConverter))]
+        public enum AssistantEmotionResponse
+        {
+            Neutral,
+            Pissed,
+            MildlyHappy,
+            Ecstatic,
+            Annoyed,
+            Surprised
+        }
+
         [Serializable]
         private class StructuredAssistantResponse
         {
@@ -699,6 +723,9 @@ namespace Runtime.Reasoning
 
             [JsonProperty("respondToName")]
             public AssistantToggleResponse RespondToName = AssistantToggleResponse.NoChange;
+
+            [JsonProperty("emotion")]
+            public AssistantEmotionResponse Emotion = AssistantEmotionResponse.Neutral;
         }
 
         [Serializable]
