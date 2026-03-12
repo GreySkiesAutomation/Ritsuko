@@ -8609,14 +8609,19 @@ MonoBehaviour:
   CurrentLogLevel: 2
   m_statusReadOnly: 
   _toolName: OpenClawTool
-  _descriptionForPrompt: Use this tool to forward natural language task management
-    requests to OpenClaw. Use it when the user asks to add tasks, mark tasks as complete,
-    modify tasks, or otherwise manage the to-do list.
-  _jsonPayloadExampleForPrompt: "A valid example:\n{\n  \"request\": \"mark buy eggs
-    as completed\"\n}\n\nAnother valid example:\n{\n  \"request\": \"add task order
-    servo horns\"\n}"
+  _descriptionForPrompt: 'Use this tool only when the user says something like: "do
+    the openclaw hello world test".
+
+
+    This tool sends a hello message from the
+    Unity client to OpenClaw to verify that the connection and API pipeline are working.
+
+
+    Do
+    not use this tool for anything else.'
+  _jsonPayloadExampleForPrompt: "{\n  \"request\": \"hello_world_test\"\n}"
   _openClawErrorBox: {fileID: 863857701}
-  _openClawHealthEndpoint: http://localhost:3000/health
+  _openClawHealthEndpoint: http://localhost:18789/health
 --- !u!1001 &2021893550
 PrefabInstance:
   m_ObjectHideFlags: 0
