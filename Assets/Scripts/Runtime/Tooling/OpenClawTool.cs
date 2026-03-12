@@ -17,7 +17,7 @@ namespace Runtime.Tooling
         [Header("Connection Config")]
 
         [SerializeField]
-        private string _openClawHealthEndpoint = "http://localhost:3000/health";
+        private string _openClawHealthEndpoint = "http://localhost:18789/health";
 
         private bool _isConnected;
 
@@ -42,7 +42,42 @@ namespace Runtime.Tooling
 
         public override bool TryExecute(string payloadJson, out string executionSummary)
         {
-            throw new System.NotImplementedException();
+            if (!_isConnected)
+            {
+                ReportConnectionError();
+                executionSummary = "OpenClaw not connected.";
+                return false;
+            }
+
+            StartCoroutine(SendHelloWorldCoroutine());
+
+            executionSummary = "Sent hello world test message to OpenClaw";
+            return true;
+        }
+        
+        private IEnumerator SendHelloWorldCoroutine()
+        {
+            var endpoint = "http://localhost:18789/message";
+
+            var jsonBody = "{\"message\":\"hello OpenClaw, this is the Unity Client making first contact with you!\"}";
+
+            var request = new UnityWebRequest(endpoint, "POST");
+            byte[] bodyRaw = System.Text.Encoding.UTF8.GetBytes(jsonBody);
+
+            request.uploadHandler = new UploadHandlerRaw(bodyRaw);
+            request.downloadHandler = new DownloadHandlerBuffer();
+            request.SetRequestHeader("Content-Type", "application/json");
+
+            yield return request.SendWebRequest();
+
+            if (request.result != UnityWebRequest.Result.Success)
+            {
+                Log("OpenClaw hello test failed: " + request.error);
+            }
+            else
+            {
+                Log("OpenClaw hello test succeeded. Response: " + request.downloadHandler.text);
+            }
         }
         
         
