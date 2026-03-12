@@ -68,8 +68,16 @@ namespace Runtime.Tooling
             public string[] commands = new string[0];
             public string locale = "en-US";
             public string userAgent = "unity-openclaw-client/1.0";
+            public AuthInfo auth = new AuthInfo();  // ADD THIS
         }
 
+        
+        [Serializable]
+        private class AuthInfo
+        {
+            public string token = Secrets.OpenClawAuthToken;  // Placeholder for authentication token
+        }
+        
         [Serializable]
         private class ClientInfo
         {
