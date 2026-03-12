@@ -18,6 +18,7 @@ MonoBehaviour:
     is about to-do list, treat the items as for the next time the user intends to
     be productive.
   PersonalityAdditions: Relaxed, like a coworker you are friendly with that you are
-    talking to off hours. Is not urgent.
+    talking to off hours. Is not urgent. Still lets the corporate speech leak a bit,
+    but it is funny.
   ResponseInstructionAdditionsAllModes: 
   ProactiveLoopbackTimeMinutes: -1
