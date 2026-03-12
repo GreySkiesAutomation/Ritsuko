@@ -415,13 +415,13 @@ RectTransform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 62916556}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 1000994146}
-  m_Father: {fileID: 323908291}
+  m_Father: {fileID: 553827370}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 1, y: 1}
   m_AnchorMax: {x: 1, y: 1}
@@ -717,7 +717,7 @@ MonoBehaviour:
   m_statusReadOnly: 
   _thingToSpeak: 
   _isWaiting: 0
-  _reply: 
+  _emotion: 0
   _dialogText: {fileID: 1574625871}
 --- !u!114 &91771341
 MonoBehaviour:
@@ -741,6 +741,120 @@ MonoBehaviour:
   _rotationScale: {x: 0, y: 1, z: 0}
   _positionFractalLevel: 3
   _rotationFractalLevel: 3
+--- !u!1 &136202904
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 136202905}
+  - component: {fileID: 136202906}
+  m_Layer: 0
+  m_Name: LogSendTool
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &136202905
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 136202904}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1013519119}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &136202906
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 136202904}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 870933be0bfa404da625bb5605964313, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  CurrentLogLevel: 2
+  m_statusReadOnly: 
+  _toolName: LogSendTool
+  _descriptionForPrompt: 'Use this tool when the user asks to see logs. The tool
+    opens the platform default text editor so the user may inspect it.
+
+
+    There
+    are no options, so the payload is empty.'
+  _jsonPayloadExampleForPrompt: 'The only valid example:
+
+    {
+
+    }'
+--- !u!1 &152679330
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 152679331}
+  - component: {fileID: 152679332}
+  m_Layer: 0
+  m_Name: SettingsTool
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &152679331
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 152679330}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1013519119}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &152679332
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 152679330}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 23e8919d91354f418ab461978e7f94b3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  CurrentLogLevel: 2
+  m_statusReadOnly: 
+  _toolName: SettingsTool
+  _descriptionForPrompt: Use this tool to change assistant settings such as behavior
+    mode, Quiet Mode, Audit Mode, or whether the assistant responds to its name.
+    Use this whenever the user explicitly asks to enable, disable, or change one
+    of these settings.
+  _jsonPayloadExampleForPrompt: "A valid example:\n{\n  \"settingName\": \"QuietMode\",\n 
+    \"value\": \"On\"\n}\n\nAnother valid example:\n{\n  \"settingName\": \"AuditMode\",\n 
+    \"value\": \"Off\"\n}\n\nAnother valid example:\n{\n  \"settingName\": \"Mode\",\n 
+    \"value\": \"ProductiveWork\"\n}\n\nAnother valid example:\n{\n  \"settingName\":
+    \"RespondToName\",\n  \"value\": \"On\"\n}"
 --- !u!1 &167445101
 GameObject:
   m_ObjectHideFlags: 0
@@ -1207,14 +1321,13 @@ RectTransform:
   - {fileID: 167445102}
   - {fileID: 426501784}
   - {fileID: 358848194}
-  - {fileID: 731437733}
-  - {fileID: 62916557}
   - {fileID: 31337158}
   - {fileID: 1458409685}
   - {fileID: 608788502}
   - {fileID: 1640885999}
   - {fileID: 2013013703}
   - {fileID: 930986900}
+  - {fileID: 2003458454}
   m_Father: {fileID: 553827370}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
@@ -2203,6 +2316,142 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 536656637}
   m_CullTransparentMesh: 1
+--- !u!1 &549254023
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 549254024}
+  - component: {fileID: 549254026}
+  - component: {fileID: 549254025}
+  m_Layer: 5
+  m_Name: UI_BigToDoListTitleText
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &549254024
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 549254023}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 2003458454}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0, y: 1}
+  m_AnchorMax: {x: 1, y: 1}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: -20, y: 1210}
+  m_Pivot: {x: 0.5, y: 1}
+--- !u!114 &549254025
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 549254023}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f4688fdb7df04437aeb418b961361dc5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Material: {fileID: 0}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_RaycastTarget: 1
+  m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
+  m_Maskable: 1
+  m_OnCullStateChanged:
+    m_PersistentCalls:
+      m_Calls: []
+  m_text: Tasks
+  m_isRightToLeft: 0
+  m_fontAsset: {fileID: 11400000, guid: 4db6be6b14228c840ae8e154c2d04270, type: 2}
+  m_sharedMaterial: {fileID: 8134038112346518879, guid: 4db6be6b14228c840ae8e154c2d04270, type: 2}
+  m_fontSharedMaterials: []
+  m_fontMaterial: {fileID: 0}
+  m_fontMaterials: []
+  m_fontColor32:
+    serializedVersion: 2
+    rgba: 4278190080
+  m_fontColor: {r: 0, g: 0, b: 0, a: 1}
+  m_enableVertexGradient: 0
+  m_colorMode: 3
+  m_fontColorGradient:
+    topLeft: {r: 1, g: 1, b: 1, a: 1}
+    topRight: {r: 1, g: 1, b: 1, a: 1}
+    bottomLeft: {r: 1, g: 1, b: 1, a: 1}
+    bottomRight: {r: 1, g: 1, b: 1, a: 1}
+  m_fontColorGradientPreset: {fileID: 0}
+  m_spriteAsset: {fileID: 0}
+  m_tintAllSprites: 0
+  m_StyleSheet: {fileID: 0}
+  m_TextStyleHashCode: -1183493901
+  m_overrideHtmlColors: 0
+  m_faceColor:
+    serializedVersion: 2
+    rgba: 4294967295
+  m_fontSize: 72
+  m_fontSizeBase: 36
+  m_fontWeight: 400
+  m_enableAutoSizing: 1
+  m_fontSizeMin: 18
+  m_fontSizeMax: 72
+  m_fontStyle: 0
+  m_HorizontalAlignment: 1
+  m_VerticalAlignment: 256
+  m_textAlignment: 65535
+  m_characterSpacing: 0
+  m_wordSpacing: 0
+  m_lineSpacing: 0
+  m_lineSpacingMax: 0
+  m_paragraphSpacing: 0
+  m_charWidthMaxAdj: 0
+  m_TextWrappingMode: 1
+  m_wordWrappingRatios: 0.4
+  m_overflowMode: 0
+  m_linkedTextComponent: {fileID: 0}
+  parentLinkedComponent: {fileID: 0}
+  m_enableKerning: 0
+  m_ActiveFontFeatures: 6e72656b
+  m_enableExtraPadding: 0
+  checkPaddingRequired: 0
+  m_isRichText: 1
+  m_EmojiFallbackSupport: 1
+  m_parseCtrlCharacters: 1
+  m_isOrthographic: 1
+  m_isCullingEnabled: 0
+  m_horizontalMapping: 0
+  m_verticalMapping: 0
+  m_uvLineOffset: 0
+  m_geometrySortingOrder: 0
+  m_IsTextObjectScaleStatic: 0
+  m_VertexBufferAutoSizeReduction: 0
+  m_useMaxVisibleDescender: 1
+  m_pageToDisplay: 1
+  m_margin: {x: 0, y: 0, z: 0, w: 0}
+  m_isUsingLegacyAnimationComponent: 0
+  m_isVolumetricText: 0
+  m_hasFontAssetChanged: 0
+  m_baseMaterial: {fileID: 0}
+  m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
+--- !u!222 &549254026
+CanvasRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 549254023}
+  m_CullTransparentMesh: 1
 --- !u!1 &553827366
 GameObject:
   m_ObjectHideFlags: 0
@@ -2298,6 +2547,8 @@ RectTransform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 323908291}
+  - {fileID: 731437733}
+  - {fileID: 62916557}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
@@ -2814,13 +3065,13 @@ RectTransform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 731437732}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 393115937}
-  m_Father: {fileID: 323908291}
+  m_Father: {fileID: 553827370}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 1, y: 1}
   m_AnchorMax: {x: 1, y: 1}
@@ -3332,6 +3583,148 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   CurrentLogLevel: 2
   m_statusReadOnly: 
+--- !u!1 &954012133
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 954012134}
+  - component: {fileID: 954012136}
+  - component: {fileID: 954012135}
+  m_Layer: 5
+  m_Name: UI_BigToDoListContentsText
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &954012134
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 954012133}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 2003458454}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0, y: 0}
+  m_AnchorMax: {x: 1, y: 1}
+  m_AnchoredPosition: {x: 0, y: -30}
+  m_SizeDelta: {x: -60, y: -140}
+  m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &954012135
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 954012133}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f4688fdb7df04437aeb418b961361dc5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Material: {fileID: 0}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_RaycastTarget: 1
+  m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
+  m_Maskable: 1
+  m_OnCullStateChanged:
+    m_PersistentCalls:
+      m_Calls: []
+  m_text: "IN PROGRESS\n\u2022 Implement ToDoListDisplayTool JSON parsing\n\u2022
+    Hook up ToolRouter execution logging\n\u2022 Tune proactive loop cooldown behavior\n\nPENDING\n\u2022
+    Implement OpenClawTool integration\n\u2022 Add Trello task sync experiment\n\u2022
+    Improve presence detection CV filtering\n\u2022 Add stream mode behavior profile\n\u2022
+    Implement log export to Discord\n\nBLOCKED\n\u2022 Configure OpenClaw gateway
+    authentication\n\u2022 Waiting on Trello API key approval\n\nFINISHED\n\u2022
+    Implement SettingsTool\n\u2022 Refactor QueryHandler to remove settings logic"
+  m_isRightToLeft: 0
+  m_fontAsset: {fileID: 11400000, guid: 4db6be6b14228c840ae8e154c2d04270, type: 2}
+  m_sharedMaterial: {fileID: 8134038112346518879, guid: 4db6be6b14228c840ae8e154c2d04270, type: 2}
+  m_fontSharedMaterials: []
+  m_fontMaterial: {fileID: 0}
+  m_fontMaterials: []
+  m_fontColor32:
+    serializedVersion: 2
+    rgba: 4278190080
+  m_fontColor: {r: 0, g: 0, b: 0, a: 1}
+  m_enableVertexGradient: 0
+  m_colorMode: 3
+  m_fontColorGradient:
+    topLeft: {r: 1, g: 1, b: 1, a: 1}
+    topRight: {r: 1, g: 1, b: 1, a: 1}
+    bottomLeft: {r: 1, g: 1, b: 1, a: 1}
+    bottomRight: {r: 1, g: 1, b: 1, a: 1}
+  m_fontColorGradientPreset: {fileID: 0}
+  m_spriteAsset: {fileID: 0}
+  m_tintAllSprites: 0
+  m_StyleSheet: {fileID: 0}
+  m_TextStyleHashCode: -1183493901
+  m_overrideHtmlColors: 0
+  m_faceColor:
+    serializedVersion: 2
+    rgba: 4294967295
+  m_fontSize: 36.25
+  m_fontSizeBase: 36
+  m_fontWeight: 400
+  m_enableAutoSizing: 1
+  m_fontSizeMin: 18
+  m_fontSizeMax: 72
+  m_fontStyle: 0
+  m_HorizontalAlignment: 1
+  m_VerticalAlignment: 256
+  m_textAlignment: 65535
+  m_characterSpacing: 0
+  m_wordSpacing: 0
+  m_lineSpacing: 0
+  m_lineSpacingMax: 0
+  m_paragraphSpacing: 0
+  m_charWidthMaxAdj: 0
+  m_TextWrappingMode: 1
+  m_wordWrappingRatios: 0.4
+  m_overflowMode: 0
+  m_linkedTextComponent: {fileID: 0}
+  parentLinkedComponent: {fileID: 0}
+  m_enableKerning: 0
+  m_ActiveFontFeatures: 6e72656b
+  m_enableExtraPadding: 0
+  checkPaddingRequired: 0
+  m_isRichText: 1
+  m_EmojiFallbackSupport: 1
+  m_parseCtrlCharacters: 1
+  m_isOrthographic: 1
+  m_isCullingEnabled: 0
+  m_horizontalMapping: 0
+  m_verticalMapping: 0
+  m_uvLineOffset: 0
+  m_geometrySortingOrder: 0
+  m_IsTextObjectScaleStatic: 0
+  m_VertexBufferAutoSizeReduction: 0
+  m_useMaxVisibleDescender: 1
+  m_pageToDisplay: 1
+  m_margin: {x: 0, y: 0, z: 0, w: 0}
+  m_isUsingLegacyAnimationComponent: 0
+  m_isVolumetricText: 0
+  m_hasFontAssetChanged: 0
+  m_baseMaterial: {fileID: 0}
+  m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
+--- !u!222 &954012136
+CanvasRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 954012133}
+  m_CullTransparentMesh: 1
 --- !u!1 &963194225
 GameObject:
   m_ObjectHideFlags: 0
@@ -3726,6 +4119,61 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1002505848}
   m_CullTransparentMesh: 1
+--- !u!1 &1013519118
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1013519119}
+  - component: {fileID: 1013519120}
+  m_Layer: 0
+  m_Name: ToolRouter
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1013519119
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1013519118}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 2015963915}
+  - {fileID: 1032106491}
+  - {fileID: 136202905}
+  - {fileID: 152679331}
+  m_Father: {fileID: 1425339352}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1013519120
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1013519118}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d9a4103fec744601b3137794199c2238, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  CurrentLogLevel: 3
+  m_statusReadOnly: 
+  _tools:
+  - {fileID: 2015963916}
+  - {fileID: 1032106492}
+  - {fileID: 136202906}
+  - {fileID: 152679332}
 --- !u!1 &1013809935
 GameObject:
   m_ObjectHideFlags: 0
@@ -3914,6 +4362,78 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1030953281}
   m_CullTransparentMesh: 1
+--- !u!1 &1032106490
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1032106491}
+  - component: {fileID: 1032106492}
+  m_Layer: 0
+  m_Name: ToDoListDisplayTool
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1032106491
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1032106490}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1013519119}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1032106492
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1032106490}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d8ba876a9034460dbaef1834d4970947, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  CurrentLogLevel: 2
+  m_statusReadOnly: 
+  _toolName: ToDoListDisplayTool
+  _descriptionForPrompt: "Use this tool when the user asks to see, show, or hide
+    the full to-do list. This displays the task list in a large UI view instead of
+    returning it in the assistant reply.\n\nWhen showing the list, return the tasks
+    in the items array with a status and item text.\n\nAllowed status values:\n-
+    in progress\n- pending\n- blocked\n- finished\n\nIf the user asks to show the
+    to-do list for a specific time, convert that request to durationMinutes as a
+    float in minutes.\n\nExamples:\n- 20 minutes \u2192 20\n- 30 seconds \u2192 0.5\n-
+    1 hour \u2192 60\n\nRules:\n- If the user says \"show the to-do list\", default
+    to durationMinutes = 5.\n- If the user asks to keep the list visible indefinitely,
+    omit durationMinutes.\n- If the user asks to hide or close the list, set option
+    to \"hide\".\n- If the user asks to show it, set option to \"show\"."
+  _jsonPayloadExampleForPrompt: "A valid example payload:\n{\n  \"option\": \"show\",\n 
+    \"durationMinutes\": 5,\n  \"items\": [\n    {\n      \"status\": \"in progress\",\n     
+    \"item\": \"Implement OpenClawTool\"\n    },\n    {\n      \"status\": \"in progress\",\n     
+    \"item\": \"Tune proactive loop behavior\"\n    },\n    {\n      \"status\":
+    \"pending\",\n      \"item\": \"Hook up Trello task sync\"\n    },\n    {\n     
+    \"status\": \"pending\",\n      \"item\": \"Add Discord log export tool\"\n   
+    },\n    {\n      \"status\": \"blocked\",\n      \"item\": \"Waiting for OpenClaw
+    API key\"\n    },\n    {\n      \"status\": \"finished\",\n      \"item\": \"Implement
+    SettingsTool\"\n    }\n  ]\n}\n\nanother valid example payload:\n{\n  \"option\":
+    \"show\",\n  \"durationMinutes\": 0.5,\n  \"items\": [\n    {\n      \"status\":
+    \"pending\",\n      \"item\": \"Check stream setup\"\n    }\n  ]\n}\n\nanother
+    valid example payload:\n{\n  \"option\": \"hide\",\n  \"items\": []\n}"
+  _toDoListDisplayPrefab: {fileID: 2003458453}
+  _toDoListText: {fileID: 954012135}
 --- !u!1 &1048650640
 GameObject:
   m_ObjectHideFlags: 0
@@ -4719,6 +5239,7 @@ Transform:
   - {fileID: 1947819712}
   - {fileID: 1013809936}
   - {fileID: 1521810214}
+  - {fileID: 1013519119}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &1425339353
@@ -4746,6 +5267,7 @@ MonoBehaviour:
   _wakeWordSidecarClient: {fileID: 1915740746}
   _cvPresenceTracker: {fileID: 1013809937}
   _proactiveAgencyController: {fileID: 1521810213}
+  _toolRouter: {fileID: 1013519120}
   _configuration: {fileID: 11400000, guid: 4fde08eb4c28556468c0f8b66782470a, type: 2}
 --- !u!1 &1432921430
 GameObject:
@@ -7049,6 +7571,83 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1989249721}
   m_CullTransparentMesh: 1
+--- !u!1 &2003458453
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2003458454}
+  - component: {fileID: 2003458456}
+  - component: {fileID: 2003458455}
+  m_Layer: 5
+  m_Name: UI_BigToDoList
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 0
+--- !u!224 &2003458454
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2003458453}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 549254024}
+  - {fileID: 954012134}
+  m_Father: {fileID: 323908291}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0, y: 0}
+  m_AnchorMax: {x: 1, y: 1}
+  m_AnchoredPosition: {x: 0, y: 200}
+  m_SizeDelta: {x: -200, y: -600}
+  m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &2003458455
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2003458453}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Material: {fileID: 0}
+  m_Color: {r: 1, g: 1, b: 1, a: 0.94509804}
+  m_RaycastTarget: 1
+  m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
+  m_Maskable: 1
+  m_OnCullStateChanged:
+    m_PersistentCalls:
+      m_Calls: []
+  m_Sprite: {fileID: 10907, guid: 0000000000000000f000000000000000, type: 0}
+  m_Type: 1
+  m_PreserveAspect: 0
+  m_FillCenter: 1
+  m_FillMethod: 4
+  m_FillAmount: 1
+  m_FillClockwise: 1
+  m_FillOrigin: 0
+  m_UseSpriteMesh: 0
+  m_PixelsPerUnitMultiplier: 1
+--- !u!222 &2003458456
+CanvasRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2003458453}
+  m_CullTransparentMesh: 1
 --- !u!1 &2013013702
 GameObject:
   m_ObjectHideFlags: 0
@@ -7195,6 +7794,59 @@ Transform:
   m_Children: []
   m_Father: {fileID: 91771339}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &2015963914
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2015963915}
+  - component: {fileID: 2015963916}
+  m_Layer: 0
+  m_Name: OpenClawTool
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &2015963915
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2015963914}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1013519119}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &2015963916
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2015963914}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 665ac07b8f7f4b10a9e2f8c08dd574ae, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  CurrentLogLevel: 2
+  m_statusReadOnly: 
+  _toolName: OpenClawTool
+  _descriptionForPrompt: Use this tool to forward natural language task management
+    requests to OpenClaw. Use it when the user asks to add tasks, mark tasks as complete,
+    modify tasks, or otherwise manage the to-do list.
+  _jsonPayloadExampleForPrompt: "A valid example:\n{\n  \"request\": \"mark buy eggs
+    as completed\"\n}\n\nAnother valid example:\n{\n  \"request\": \"add task order
+    servo horns\"\n}"
 --- !u!1001 &2021893550
 PrefabInstance:
   m_ObjectHideFlags: 0

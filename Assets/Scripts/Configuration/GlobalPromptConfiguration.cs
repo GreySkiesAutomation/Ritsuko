@@ -63,5 +63,8 @@ namespace Configuration
         [TextArea(10, 50)]
         public string ResponseInstructionsForSelf = "This is not a message from the user, but from the assistant reflecting on the conversation history and asking the user about updates" +
                                                     " or progress on their tasks. Write a concise message that naturally fits into the conversation based on this thought from the assistant, that serves as a check-in on the user. ";
+        
+        [TextArea(10, 50)]
+        public string ToolingUsageInstructions = "Tool usage rules:\\n\\n- You may invoke at most one tool in a single response.\\n- If no tool is needed, set toolName to \"None\" and toolPayload to {}.\\n- Do not invent tool names. Only use tool names listed below.\\n- toolPayload must be a valid JSON object.\\n- When using a tool, choose the one tool that best matches the user's request.\\n- If the user is explicitly asking to change a setting, use the appropriate tool instead of describing the setting change without a tool call.";
     }
 }

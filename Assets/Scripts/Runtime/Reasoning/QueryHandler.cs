@@ -7,6 +7,7 @@ using Configuration;
 using NaughtyAttributes;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
+using Newtonsoft.Json.Linq;
 using Runtime.Reasoning.DataTypes;
 using Runtime.Utilities;
 using UnityEngine;
@@ -43,32 +44,14 @@ namespace Runtime.Reasoning
 
         private readonly List<ConversationMessage> _conversationHistory = new List<ConversationMessage>();
 
-        public event Action<AssistantModeResponse> OnModeChangedEvent;
-        public event Action<AssistantToggleResponse> OnAuditModeChangedEvent;
-        public event Action<AssistantToggleResponse> OnQuietModeChangedEvent;
-        public event Action<AssistantToggleResponse> OnRespondToNameChangedEvent;
-
         public void Initialize()
         {
             LoadHistoryFromDisk();
             RefreshStats();
 
-            OnModeChangedEvent += OnModeChanged;
-            OnAuditModeChangedEvent += OnAuditModeChanged;
-            OnQuietModeChangedEvent += OnQuietModeChanged;
-            OnRespondToNameChangedEvent += OnRespondToNameChanged;
-
             _thinkingIndicator.SetActive(false);
 
             SetInitialized();
-        }
-
-        public void OnDestroy()
-        {
-            OnModeChangedEvent -= OnModeChanged;
-            OnAuditModeChangedEvent -= OnAuditModeChanged;
-            OnQuietModeChangedEvent -= OnQuietModeChanged;
-            OnRespondToNameChangedEvent -= OnRespondToNameChanged;
         }
 
         [Button("Reset")]
@@ -130,8 +113,6 @@ namespace Runtime.Reasoning
                     return;
                 }
 
-                ApplyStructuredAssistantResponseChanges(structuredAssistantResponse);
-
                 AddConversationMessage("user", messageContent, userTimestamp);
                 AddConversationMessage("assistant", structuredAssistantResponse.reply, TimeUtility.GetCurrentLocalAustinTimeDisplay());
                 TrimConversationHistoryToLimit();
@@ -150,6 +131,8 @@ namespace Runtime.Reasoning
                     source,
                     structuredAssistantResponse.ConversationState != AssistantConversationState.End);
 
+                ExecuteToolIfRequested(structuredAssistantResponse);
+
                 if (structuredAssistantResponse.ConversationState == AssistantConversationState.End)
                 {
                     Log("[QueryHandler] Detected end of conversation.");
@@ -165,117 +148,54 @@ namespace Runtime.Reasoning
             }
         }
 
-        private void ApplyStructuredAssistantResponseChanges(StructuredAssistantResponse structuredAssistantResponse)
+        private void ExecuteToolIfRequested(StructuredAssistantResponse structuredAssistantResponse)
         {
             if (structuredAssistantResponse == null)
             {
                 return;
             }
 
-            if (structuredAssistantResponse.Mode != AssistantModeResponse.NoChange)
+            if (string.IsNullOrWhiteSpace(structuredAssistantResponse.ToolName))
             {
-                Log("[QueryHandler] Invoking OnModeChanged: " + structuredAssistantResponse.Mode);
-                OnModeChangedEvent?.Invoke(structuredAssistantResponse.Mode);
+                Log("[QueryHandler] No tool name provided. Skipping tool execution.");
+                return;
             }
 
-            if (structuredAssistantResponse.AuditMode != AssistantToggleResponse.NoChange)
+            if (string.Equals(structuredAssistantResponse.ToolName, "None", StringComparison.OrdinalIgnoreCase))
             {
-                Log("[QueryHandler] Invoking OnAuditModeChanged: " + structuredAssistantResponse.AuditMode);
-                OnAuditModeChangedEvent?.Invoke(structuredAssistantResponse.AuditMode);
+                Log("[QueryHandler] No tool requested.");
+                return;
             }
 
-            if (structuredAssistantResponse.QuietMode != AssistantToggleResponse.NoChange)
+            var payloadJson = structuredAssistantResponse.ToolPayload == null
+                ? "{}"
+                : structuredAssistantResponse.ToolPayload.ToString(Formatting.None);
+
+            Log("[QueryHandler] Tool requested: " + structuredAssistantResponse.ToolName);
+            Log("[QueryHandler] Tool payload: " + payloadJson);
+
+            var toolExecutedSuccessfully = GlobalManager.I.ToolRouter.TryExecuteTool(
+                structuredAssistantResponse.ToolName,
+                payloadJson,
+                out var executionSummary);
+
+            if (toolExecutedSuccessfully)
             {
-                Log("[QueryHandler] Invoking OnQuietModeChanged: " + structuredAssistantResponse.QuietMode);
-                OnQuietModeChangedEvent?.Invoke(structuredAssistantResponse.QuietMode);
+                Log("[QueryHandler] Tool executed successfully. Summary: " + executionSummary);
+
+                if (_auditHistoryToDiscord && !string.IsNullOrWhiteSpace(executionSummary))
+                {
+                    GlobalManager.I.DiscordClient.SendDirectMessage("**Tool execution:** " + executionSummary);
+                }
             }
-
-            if (structuredAssistantResponse.RespondToName != AssistantToggleResponse.NoChange)
+            else
             {
-                Log("[QueryHandler] Invoking OnRespondToNameChanged: " + structuredAssistantResponse.RespondToName);
-                OnRespondToNameChangedEvent?.Invoke(structuredAssistantResponse.RespondToName);
-            }
-        }
+                LogWarning("[QueryHandler] Tool execution failed. Summary: " + executionSummary);
 
-        private void OnModeChanged(AssistantModeResponse newMode)
-        {
-            Log("[QueryHandler] Mode change requested: " + newMode);
-
-            switch (newMode)
-            {
-                case AssistantModeResponse.NoChange:
-                    break;
-                case AssistantModeResponse.Chill:
-                    GlobalManager.I.State.CurrentMode = BehaviourMode.Chill;
-                    break;
-                case AssistantModeResponse.ProductiveHobby:
-                    GlobalManager.I.State.CurrentMode = BehaviourMode.ProductiveHobby;
-                    break;
-                case AssistantModeResponse.ProductiveWork:
-                    GlobalManager.I.State.CurrentMode = BehaviourMode.ProductiveWork;
-                    break;
-                case AssistantModeResponse.ProductiveDomestic:
-                    GlobalManager.I.State.CurrentMode = BehaviourMode.ProductiveDomestic;
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException(nameof(newMode), newMode, null);
-            }
-        }
-
-        private void OnAuditModeChanged(AssistantToggleResponse newAuditMode)
-        {
-            Log("[QueryHandler] Audit mode change requested: " + newAuditMode);
-
-            switch (newAuditMode)
-            {
-                case AssistantToggleResponse.NoChange:
-                    break;
-                case AssistantToggleResponse.On:
-                    GlobalManager.I.State.AuditModeEnabled = true;
-                    break;
-                case AssistantToggleResponse.Off:
-                    GlobalManager.I.State.AuditModeEnabled = false;
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException(nameof(newAuditMode), newAuditMode, null);
-            }
-        }
-
-        private void OnQuietModeChanged(AssistantToggleResponse newQuietMode)
-        {
-            Log("[QueryHandler] Quiet mode change requested: " + newQuietMode);
-
-            switch (newQuietMode)
-            {
-                case AssistantToggleResponse.NoChange:
-                    break;
-                case AssistantToggleResponse.On:
-                    GlobalManager.I.State.QuietModeEnabled = true;
-                    break;
-                case AssistantToggleResponse.Off:
-                    GlobalManager.I.State.QuietModeEnabled = false;
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException(nameof(newQuietMode), newQuietMode, null);
-            }
-        }
-
-        private void OnRespondToNameChanged(AssistantToggleResponse newRespondToName)
-        {
-            Log("[QueryHandler] Respond to name change requested: " + newRespondToName);
-
-            switch (newRespondToName)
-            {
-                case AssistantToggleResponse.NoChange:
-                    break;
-                case AssistantToggleResponse.On:
-                    GlobalManager.I.State.RespondToNameEnabled = true;
-                    break;
-                case AssistantToggleResponse.Off:
-                    GlobalManager.I.State.RespondToNameEnabled = false;
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException(nameof(newRespondToName), newRespondToName, null);
+                if (_auditHistoryToDiscord && !string.IsNullOrWhiteSpace(executionSummary))
+                {
+                    GlobalManager.I.DiscordClient.SendDirectMessage("**Tool execution failed:** " + executionSummary);
+                }
             }
         }
 
@@ -323,7 +243,7 @@ namespace Runtime.Reasoning
 
             _currentLocalAustinTimeDisplay = TimeUtility.GetCurrentLocalAustinTimeDisplay();
 
-            var systemPrompt = PromptBuilder.BuildSystemPrompt(source, true);
+            var systemPrompt = GlobalManager.I.PromptBuilder.BuildSystemPrompt(source, true);
 
             var systemPromptWithTimeContext =
                 systemPrompt + "\n\n" +
@@ -401,6 +321,16 @@ namespace Runtime.Reasoning
                 }
 
                 if (string.IsNullOrWhiteSpace(parsedResponse.reply))
+                {
+                    return false;
+                }
+
+                if (string.IsNullOrWhiteSpace(parsedResponse.ToolName))
+                {
+                    return false;
+                }
+
+                if (parsedResponse.ToolPayload == null)
                 {
                     return false;
                 }
@@ -676,24 +606,6 @@ namespace Runtime.Reasoning
         }
 
         [JsonConverter(typeof(StringEnumConverter))]
-        public enum AssistantModeResponse
-        {
-            NoChange,
-            Chill,
-            ProductiveHobby,
-            ProductiveWork,
-            ProductiveDomestic
-        }
-
-        [JsonConverter(typeof(StringEnumConverter))]
-        public enum AssistantToggleResponse
-        {
-            NoChange,
-            On,
-            Off
-        }
-
-        [JsonConverter(typeof(StringEnumConverter))]
         public enum AssistantEmotionResponse
         {
             Neutral,
@@ -712,20 +624,14 @@ namespace Runtime.Reasoning
             [JsonProperty("conversationState")]
             public AssistantConversationState ConversationState = AssistantConversationState.Continue;
 
-            [JsonProperty("mode")]
-            public AssistantModeResponse Mode = AssistantModeResponse.NoChange;
-
-            [JsonProperty("auditMode")]
-            public AssistantToggleResponse AuditMode = AssistantToggleResponse.NoChange;
-
-            [JsonProperty("quietMode")]
-            public AssistantToggleResponse QuietMode = AssistantToggleResponse.NoChange;
-
-            [JsonProperty("respondToName")]
-            public AssistantToggleResponse RespondToName = AssistantToggleResponse.NoChange;
-
             [JsonProperty("emotion")]
             public AssistantEmotionResponse Emotion = AssistantEmotionResponse.Neutral;
+
+            [JsonProperty("toolName")]
+            public string ToolName = "None";
+
+            [JsonProperty("toolPayload")]
+            public JToken ToolPayload = new JObject();
         }
 
         [Serializable]

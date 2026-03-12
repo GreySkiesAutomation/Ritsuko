@@ -12,7 +12,7 @@ namespace Runtime.Reasoning
 {
     public class PromptBuilder : PearlBehaviour
     {
-        private static readonly Dictionary<PromptCacheKey, string> s_systemPromptCache = new Dictionary<PromptCacheKey, string>();
+        private readonly Dictionary<PromptCacheKey, string> _systemPromptCache = new Dictionary<PromptCacheKey, string>();
 
         private readonly struct PromptCacheKey
         {
@@ -26,64 +26,76 @@ namespace Runtime.Reasoning
             }
         }
 
-        private void Start()
+        public void Initialize()
         {
             SetInitialized();
         }
 
-        public static void ClearGeneratedPromptCache()
+        public void ClearGeneratedPromptCache()
         {
-            s_systemPromptCache.Clear();
+            _systemPromptCache.Clear();
         }
 
-        public static string BuildSystemPrompt(QuerySource querySource, bool attachLocalTime = false)
+        public string BuildSystemPrompt(QuerySource querySource, bool attachLocalTime = false)
         {
+            if (!IsInitialized)
+            {
+                LogError("PromptBuilder is not initialized. Returning empty prompt.");
+                return "";
+            }
+
             var currentMode = GlobalManager.I.State.CurrentMode;
             var promptCacheKey = new PromptCacheKey(currentMode, querySource);
-            var returnPrompt = "";
 
-            if (s_systemPromptCache.TryGetValue(promptCacheKey, out var cachedPrompt))
+            if (_systemPromptCache.TryGetValue(promptCacheKey, out var cachedPrompt))
             {
-                returnPrompt = cachedPrompt;
-            }
-            else
-            {
-                var globalConfiguration = GlobalManager.I.Configuration.GlobalPromptConfiguration;
-                var modePromptConfiguration = GetResolvedModePromptConfiguration(currentMode);
-
-                var stringBuilder = new StringBuilder(2048);
-
-                AppendLineIfNotEmpty(stringBuilder, "Purpose: ", globalConfiguration.Purpose);
-                AppendLineIfNotEmpty(stringBuilder, "Mode Context: ", modePromptConfiguration.ModeContext);
-
-                AppendLineIfNotEmpty(stringBuilder, "Base Personality: ", globalConfiguration.Personality);
-                AppendLineIfNotEmpty(stringBuilder, "Additional Personality due to Mode: ", modePromptConfiguration.PersonalityAdditions);
-                AppendLineIfNotEmpty(stringBuilder, "Your lore: ", globalConfiguration.Lore);
-                AppendLineIfNotEmpty(stringBuilder, "Technical notes: ", globalConfiguration.TechnicalNotes);
-
-                var responseInstructionsForSource = GetResponseInstructionsForQuerySource(globalConfiguration, querySource);
-                AppendLineIfNotEmpty(stringBuilder, "Response Instructions: ", responseInstructionsForSource);
-
-                AppendLineIfNotEmpty(stringBuilder, "Inbound Query formatting instructions: ", globalConfiguration.QueryFormatInstructions);
-                AppendLineIfNotEmpty(stringBuilder, "Response Instructions: ", globalConfiguration.ResponseInstructionsGlobal);
-                AppendLineIfNotEmpty(stringBuilder, "Response Instruction Additions due to Mode: ", modePromptConfiguration.ResponseInstructionAdditionsAllModes);
-                AppendLineIfNotEmpty(stringBuilder, "Outbound Response formatting instructions: ", globalConfiguration.ResponseFormatInstructions);
-
-                var generatedPrompt = stringBuilder.ToString();
-                s_systemPromptCache[promptCacheKey] = generatedPrompt;
-                returnPrompt = generatedPrompt;
+                return AttachLocalTimeIfNeeded(cachedPrompt, attachLocalTime);
             }
 
-            if (attachLocalTime)
-            {
-                var utcNow = DateTime.UtcNow;
-                var localTime = TimeUtility.ConvertUtcToConfiguredLocalTime(utcNow);
-                var localTimeAustin = localTime.ToString("yyyy-MM-dd hh:mm:ss tt", CultureInfo.InvariantCulture);
-                returnPrompt = $"The current local time in Austin is {localTimeAustin:hh:mm tt}.\n" + returnPrompt;
-            }
-            
+            var globalConfiguration = GlobalManager.I.Configuration.GlobalPromptConfiguration;
+            var modePromptConfiguration = GetResolvedModePromptConfiguration(currentMode);
+            var stringBuilder = new StringBuilder(4096);
 
-            return returnPrompt;
+            AppendSectionHeader(stringBuilder, "Core Context");
+            AppendLineIfNotEmpty(stringBuilder, "Purpose", globalConfiguration.Purpose);
+            AppendLineIfNotEmpty(stringBuilder, "Mode Context", modePromptConfiguration.ModeContext);
+            AppendLineIfNotEmpty(stringBuilder, "Base Personality", globalConfiguration.Personality);
+            AppendLineIfNotEmpty(stringBuilder, "Additional Personality due to Mode", modePromptConfiguration.PersonalityAdditions);
+            AppendLineIfNotEmpty(stringBuilder, "Your lore", globalConfiguration.Lore);
+            AppendLineIfNotEmpty(stringBuilder, "Technical notes", globalConfiguration.TechnicalNotes);
+
+            var responseInstructionsForSource = GetResponseInstructionsForQuerySource(globalConfiguration, querySource);
+
+            AppendSectionHeader(stringBuilder, "Behavior Instructions");
+            AppendLineIfNotEmpty(stringBuilder, "Response Instructions For Current Source", responseInstructionsForSource);
+            AppendLineIfNotEmpty(stringBuilder, "Inbound Query Formatting Instructions", globalConfiguration.QueryFormatInstructions);
+            AppendLineIfNotEmpty(stringBuilder, "Global Response Instructions", globalConfiguration.ResponseInstructionsGlobal);
+            AppendLineIfNotEmpty(stringBuilder, "Response Instruction Additions due to Mode", modePromptConfiguration.ResponseInstructionAdditionsAllModes);
+
+            AppendSectionHeader(stringBuilder, "Tooling");
+            AppendBlockIfNotEmpty(stringBuilder, "Available Tools and Tool Usage Rules", GlobalManager.I.ToolRouter.PromptForTools);
+
+            AppendSectionHeader(stringBuilder, "Output Contract");
+            AppendBlockIfNotEmpty(stringBuilder, "Outbound Response Formatting Instructions", globalConfiguration.ResponseFormatInstructions);
+
+            var generatedPrompt = stringBuilder.ToString().TrimEnd();
+            _systemPromptCache[promptCacheKey] = generatedPrompt;
+
+            return AttachLocalTimeIfNeeded(generatedPrompt, attachLocalTime);
+        }
+
+        private static string AttachLocalTimeIfNeeded(string prompt, bool attachLocalTime)
+        {
+            if (!attachLocalTime)
+            {
+                return prompt;
+            }
+
+            var utcNow = DateTime.UtcNow;
+            var localTime = TimeUtility.ConvertUtcToConfiguredLocalTime(utcNow);
+            var localTimeAustin = localTime.ToString("yyyy-MM-dd hh:mm:ss tt", CultureInfo.InvariantCulture);
+
+            return $"The current local time in Austin is {localTimeAustin}.\n{prompt}";
         }
 
         private static ModePromptConfiguration GetResolvedModePromptConfiguration(BehaviourMode behaviourMode)
@@ -99,6 +111,7 @@ namespace Runtime.Reasoning
             for (var modePromptConfigurationIndex = 0; modePromptConfigurationIndex < modePromptConfigurations.Length; modePromptConfigurationIndex++)
             {
                 var modePromptConfiguration = modePromptConfigurations[modePromptConfigurationIndex];
+
                 if (modePromptConfiguration == null)
                 {
                     continue;
@@ -133,16 +146,43 @@ namespace Runtime.Reasoning
             return null;
         }
 
+        private static void AppendSectionHeader(StringBuilder stringBuilder, string sectionTitle)
+        {
+            if (stringBuilder.Length > 0)
+            {
+                stringBuilder.Append('\n');
+            }
+
+            stringBuilder.Append("=== ");
+            stringBuilder.Append(sectionTitle);
+            stringBuilder.Append(" ===");
+            stringBuilder.Append('\n');
+        }
+
         private static void AppendLineIfNotEmpty(StringBuilder stringBuilder, string label, string value)
         {
-            if (string.IsNullOrEmpty(value))
+            if (string.IsNullOrWhiteSpace(value))
             {
                 return;
             }
 
             stringBuilder.Append(label);
             stringBuilder.Append(": ");
-            stringBuilder.Append(value);
+            stringBuilder.Append(value.Trim());
+            stringBuilder.Append('\n');
+        }
+
+        private static void AppendBlockIfNotEmpty(StringBuilder stringBuilder, string label, string value)
+        {
+            if (string.IsNullOrWhiteSpace(value))
+            {
+                return;
+            }
+
+            stringBuilder.Append(label);
+            stringBuilder.Append(':');
+            stringBuilder.Append('\n');
+            stringBuilder.Append(value.Trim());
             stringBuilder.Append('\n');
         }
     }

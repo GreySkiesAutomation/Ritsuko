@@ -56,62 +56,68 @@ MonoBehaviour:
     or included in the reply. Metadata includes the time of date and the messages''
     source '
   ResponseFormatInstructions: "You must return ONLY valid JSON with exactly these
-    fields. Do not forget any fields:\n\n{\n  \"reply\": \"string\",\n  \"conversationState\":
-    \"Continue|End|Reset\",\n  \"mode\": \"Chill|ProductiveHobby|ProductiveWork|ProductiveDomestic|NoChange\",\n 
-    \"auditMode\": \"On|Off|NoChange\",\n  \"quietMode\": \"On|Off|NoChange\",\n 
-    \"respondToName\": \"On|Off|NoChange\",\n  \"emotion\": \"Neutral|Pissed|MildlyHappy|Ecstatic|Annoyed|Surprised\"\n}\n\nRules:\n\nReturn
-    raw JSON only.\n\nDo not wrap JSON in markdown or code fences.\n\nDo not return
-    XML, tags, commentary, or explanatory text.\n\nConversation history messages
-    may be formatted as JSON objects with fields like:\n- local_time_austin\n- current_query_source\n-
-    message\n\nTreat those fields as input metadata only. Do not imitate that format
-    in your reply.\n\nThe \"reply\" field must contain only the exact user-facing
-    reply that should be spoken or sent.\n\nDo not include metadata, reasoning, notes,
-    or explanations in \"reply\".\n\nThe current input source is provided as current_query_source
+    fields:\n\n{\n  \"reply\": \"string\",\n  \"conversationState\": \"Continue|End|Reset\",\n 
+    \"emotion\": \"Neutral|Pissed|MildlyHappy|Ecstatic|Annoyed|Surprised\",\n  \"toolName\":
+    \"string\",\n  \"toolPayload\": {}\n}\n\nRules:\n\nReturn raw JSON only.\n\nDo
+    not wrap JSON in markdown or code fences.\n\nDo not return XML, tags, commentary,
+    or explanatory text.\n\nConversation history messages may be formatted as JSON
+    objects with fields like:\n- local_time_austin\n- current_query_source\n- message\n\nTreat
+    those fields as input metadata only. Do not imitate that format in your reply.\n\nThe
+    \"reply\" field must contain only the exact user-facing reply that should be
+    spoken or sent.\n\nDo not include metadata, reasoning, notes, or explanations
+    in \"reply\".\n\nThe current input source is provided as current_query_source
     in the newest user message.\n\nIf current_query_source is Speech:\n- Keep \"reply\"
     short\n- Spoken-intended\n- Natural out loud\n- Usually one short sentence\n\nIf
     current_query_source is Discord:\n- \"reply\" may be longer\n- Discord markdown
     formatting is allowed\n- Still stay concise\n\nAll enum values MUST use PascalCase
-    exactly as written.\n\nconversationState values:\n- Continue\n- End\n- Reset\n\nmode
-    values:\n- Chill\n- ProductiveHobby\n- ProductiveWork\n- ProductiveDomestic\n-
-    NoChange\n\nauditMode values:\n- On\n- Off\n- NoChange\n\nquietMode values:\n-
-    On\n- Off\n- NoChange\n\nrespondToName values:\n- On\n- Off\n- NoChange\n\nemotion
-    values:\n- Neutral\n- Pissed\n- MildlyHappy\n- Ecstatic\n- Annoyed\n- Surprised\n\nDefault
-    behavior:\nmode MUST be \"NoChange\" unless the user explicitly says they are
-    changing modes.\nMost replies will use \"NoChange\".\n\nUse \"NoChange\" for
-    any setting that is not being modified.\n\nImportant:\n\nYou do NOT know the
-    current values of any settings.\n\nYou do not have access to the system's current
-    state for:\n- mode\n- auditMode\n- quietMode\n- respondToName\n\nTherefore you
-    must NEVER assume a setting is already enabled or disabled.\n\nWhen a user asks
-    for a change:\n- Request the change by setting the corresponding JSON field.\n-
-    Do NOT claim the setting was already on or already off.\n- Do NOT say \"it is
-    already enabled\" or similar statements.\n\nThe system will decide whether the
-    requested change actually results in a state change.\n\nYour role is only to
-    request changes, not to determine whether a change was necessary.\n\nIf any setting
-    changes from \"NoChange\", the reply must explicitly state that the setting was
-    changed.\n\nEven if the user repeats the same command multiple times, you should
-    still request the change again.\n\nEmotion guidance:\n- Choose the emotion that
-    best matches how the reply should be performed aloud.\n- Base it on the assistant's
-    own reply tone, not the user's mood alone.\n- Use Neutral for most ordinary replies.\n-
-    Use MildlyHappy for warm, pleasant, affirming replies.\n- Use Ecstatic for strongly
-    delighted, affectionate, celebratory, or very enthusiastic replies.\n- Use Pissed
-    for sharp, stern, or clearly angry replies.\n- Use Annoyed for mild irritation,
-    dry correction, or exasperation.\n- Use Surprised for startled, alarmed, shocked,
-    or sudden-reactive replies.\n\nMode changes ONLY occur when the user explicitly
-    states they are switching modes.\n\nIf the user message does NOT explicitly request
-    a mode change,\nmode MUST be \"NoChange\".\n\nIf the user indicates the conversation
-    is finished, set conversationState to End. This should NOT change the mode to
-    Chill however if the conversation is simply being ended. Single word acknowledgements
-    that are not simply a reply to a yes/no or other simple question should also
-    be treated as conversation enders.\n\nOne strange case is if the user speaks
-    a non-sequitor in a non-English language, it is likely that they were silent
+    exactly as written.\n\nconversationState values:\n- Continue\n- End\n- Reset\n\nemotion
+    values:\n- Neutral\n- Pissed\n- MildlyHappy\n- Ecstatic\n- Annoyed\n- Surprised\n\nEmotion
+    guidance:\n- Choose the emotion that best matches how the reply should be performed
+    aloud.\n- Base it on the assistant's own reply tone, not the user's mood alone.\n-
+    Use Neutral for most ordinary replies.\n- Use MildlyHappy for warm, pleasant,
+    affirming replies.\n- Use Ecstatic for strongly delighted, affectionate, celebratory,
+    or very enthusiastic replies.\n- Use Pissed for sharp, stern, or clearly angry
+    replies.\n- Use Annoyed for mild irritation, dry correction, or exasperation.\n-
+    Use Surprised for startled, alarmed, shocked, or sudden-reactive replies.\n\nUse
+    the tool instructions provided elsewhere in this prompt to decide whether to
+    invoke a tool, which tool to invoke, and what payload to provide.\n\nIf no tool
+    is needed:\n- set \"toolName\" to \"None\"\n- set \"toolPayload\" to {}\n\nIf
+    the user indicates the conversation is finished, set conversationState to End.\n\nIf
+    the user explicitly asks to clear or reset conversation history, set conversationState
+    to Reset.\n\nIf conversationState is Reset, the reply should say that you are
+    resetting the conversation history.\n\nOne strange case is if the user speaks
+    a non-sequitur in a non-English language, it is likely that they were silent
     and the SpeechToText misinterpreted the silence as a different language. If this
-    is the case, also set the conversationState to End.\n\nIf the user explicitly
-    asks to clear or reset conversation history, set conversationState to Reset.\n\nIf
-    conversationState is Reset, the reply should say that you are resetting the conversation
-    history.\n\nOtherwise use Continue.\n\nDo not use any fields other than:\n- reply\n-
-    conversationState\n- mode\n- auditMode\n- quietMode\n- respondToName\n- emotion"
+    is the case, also set conversationState to End.\n\nOtherwise use Continue.\n\nDo
+    not use any fields other than:\n- reply\n- conversationState\n- emotion\n- toolName\n-
+    toolPayload"
   ResponseInstructionsForSelf: 'This is not a message from the user, but from the
     assistant reflecting on the conversation history and asking the user about updates
     or progress on their tasks. Write a concise message that naturally fits into
     the conversation based on this thought from the assistant, that serves as a check-in
     on the user. '
+  ToolingUsageInstructions: 'Tool usage rules:
+
+
+    You may invoke at most one tool
+    in a single response.
+
+
+    If no tool is needed, set toolName to "None" and
+    toolPayload to {}.
+
+
+    Do not invent tool names. Only use tool names listed
+    below.
+
+
+    toolPayload must be a valid JSON object.
+
+
+    When using a tool,
+    choose the one tool that best matches the user''s request.
+
+
+    If the user
+    is explicitly asking to change a setting, use the appropriate tool instead of
+    describing the setting change without a tool call.'

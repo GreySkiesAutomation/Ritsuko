@@ -8,6 +8,7 @@ using Runtime.Inputs.Presence;
 using Runtime.Inputs.SpeechToText;
 using Runtime.Reasoning;
 using Runtime.TextToSpeech;
+using Runtime.Tooling;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.Serialization;
@@ -54,6 +55,11 @@ namespace Runtime
         private ProactiveAgencyController _proactiveAgencyController;
         
         public ProactiveAgencyController ProactiveAgencyController => _proactiveAgencyController;
+        
+        [SerializeField]
+        private ToolRouter _toolRouter;
+        
+        public ToolRouter ToolRouter => _toolRouter;
 
         [FormerlySerializedAs("_config")]
         [FormerlySerializedAs("_constants")]
@@ -86,6 +92,8 @@ namespace Runtime
             InitializePromptBuilder();
             LoadOrCreateGlobalState();
             CvPresenceTracker.Initialize();
+            ToolRouter.Initialize();
+            PromptBuilder.Initialize();
             QueryHandler.Initialize();
             ProactiveAgencyController.Initialize();
             MicrophoneInputController.Initialize();
