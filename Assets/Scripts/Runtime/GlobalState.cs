@@ -123,5 +123,7 @@ namespace Runtime
                 _onChanged?.Invoke();
             }
         }
+
+        public bool OpenClawConnected { get; set; }
     }
 }
