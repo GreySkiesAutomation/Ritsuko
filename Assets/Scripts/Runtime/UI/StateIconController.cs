@@ -46,12 +46,6 @@ namespace Runtime.UI
         [SerializeField]
         private GameObject _presenceUnknownIcon;
         
-        [SerializeField]
-        private GameObject _openClawConnectedIcon;
-
-        [SerializeField]
-        private GameObject _openClawDisconnectedIcon;
-
         private void Start()
         {
             SetInitialized();
@@ -75,9 +69,6 @@ namespace Runtime.UI
             _presencePresentIcon.SetActive(GlobalManager.I.State.PresenceState == PresenceState.Present);
             _presenceAbsentIcon.SetActive(GlobalManager.I.State.PresenceState == PresenceState.Absent);
             _presenceUnknownIcon.SetActive(GlobalManager.I.State.PresenceState == PresenceState.Unknown);
-            
-            _openClawConnectedIcon.SetActive(GlobalManager.I.State.OpenClawConnected);
-            _openClawDisconnectedIcon.SetActive(!GlobalManager.I.State.OpenClawConnected);
         }
     }
 }
