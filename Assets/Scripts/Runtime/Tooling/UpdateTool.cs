@@ -131,18 +131,18 @@ namespace Runtime.Tooling
             {
                 var processStartInfo = new ProcessStartInfo
                 {
-                    FileName = "/bin/bash",
-                    Arguments = $"\"{_updateScriptAbsolutePath}\"",
+                    FileName = "open",
+                    Arguments = $"-a Terminal \"{_updateScriptAbsolutePath}\"",
                     UseShellExecute = false,
-                    CreateNoWindow = true,
-                    WorkingDirectory = Path.GetDirectoryName(_updateScriptAbsolutePath)
+                    CreateNoWindow = true
                 };
 
                 Process.Start(processStartInfo);
+                Log("UpdateTool: Requested Terminal to open update script.");
             }
             catch (System.Exception exception)
             {
-                LogError($"UpdateTool: Failed to launch update script. Exception: {exception}");
+                LogError($"UpdateTool: Failed to launch update script in Terminal. Exception: {exception}");
             }
         }
 
