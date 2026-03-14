@@ -1,35 +1,51 @@
 #!/bin/bash
 
+echo -ne "\033]0;Ritsuko Updater\007"
 
-osascript <<'END_SCRIPT'
+clear
+echo "====================================="
+echo " Ritsuko Update Service "
+echo "====================================="
+echo
+echo "Script launched at: $(date)"
+echo
 
-tell application "Terminal"
-    activate
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 
-    do script "
-    clear
+echo "Resolved script directory: $SCRIPT_DIR"
+echo "Resolved project root: $PROJECT_ROOT"
+echo
 
-    echo \"=====================================\"
-    echo \" Ritsuko Update Service Test Script \"
-    echo \"=====================================\"
-    echo
-    echo \"Script launched at: \$(date)\"
-    echo
-    echo \"Waiting 10 seconds before continuing...\"
-    echo
+echo "Preparing update..."
+echo "Git operations will begin in 10 seconds."
+echo
+sleep 10
 
-    sleep 10
+echo "Changing to project root..."
+cd "$PROJECT_ROOT" || exit 1
+echo "Current directory: $(pwd)"
+echo
 
-    echo
-    echo \"HELLO UPDATING!\"
-    echo
-    echo \"If you see this, the update script launched successfully.\"
-    echo
-    echo \"Press ENTER to close this window.\"
+echo "Resetting git workspace to HEAD..."
+git reset --hard HEAD
+echo
 
-    read
-    "
+echo "Removing untracked files and directories..."
+git clean -fd
+echo
 
-end tell
+echo "Pulling latest changes from remote..."
+git pull --ff-only
+echo
 
-END_SCRIPT
+echo "Git sync step complete."
+echo
+echo "Waiting 5 seconds..."
+sleep 5
+echo
+echo "ready for next step"
+echo
+echo "Press ENTER to close this window."
+
+read
