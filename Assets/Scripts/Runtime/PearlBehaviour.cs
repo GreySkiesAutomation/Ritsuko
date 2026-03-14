@@ -66,6 +66,15 @@ namespace Runtime
 
         #endregion
 
+        #region Public Methods
+
+        public void SetLogLevel(LogLevel logLevel)
+        {
+            CurrentLogLevel = logLevel;
+        }
+
+        #endregion
+        
         #region Protected Methods
         
         protected void SetInitialized()

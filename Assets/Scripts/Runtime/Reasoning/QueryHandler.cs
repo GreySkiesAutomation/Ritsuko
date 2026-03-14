@@ -21,6 +21,11 @@ namespace Runtime.Reasoning
         [Header("Persistence")]
         private string _historyFileName => GlobalManager.I.Configuration.ConversationHistoryFileName;
 
+        [Header("History Summarization")]
+        [SerializeField] [Range(0.05f, 1.0f)] private float _fractionMessagesToTruncateWhenLimitHit = 0.2f;
+        [SerializeField] private int _summarySizeLimitSentences = 20;
+        [SerializeField] private string _summaryPrefix = "Summary of older interactions";
+
         [Header("Stats")]
         [SerializeField] private GameObject _thinkingIndicator;
 
@@ -42,6 +47,7 @@ namespace Runtime.Reasoning
         [Header("Helpers")]
         [SerializeField] private StructuredAssistantResponseParser _structuredAssistantResponseParser;
         [SerializeField] private ConversationHistoryStore _conversationHistoryStore;
+        [SerializeField] private ConversationHistorySummarizer _conversationHistorySummarizer;
 
         private readonly List<ConversationMessage> _conversationHistory = new List<ConversationMessage>();
 
@@ -81,6 +87,32 @@ namespace Runtime.Reasoning
                     _conversationHistoryStore = gameObject.AddComponent<ConversationHistoryStore>();
                 }
             }
+
+            if (_conversationHistorySummarizer == null)
+            {
+                _conversationHistorySummarizer = GetComponent<ConversationHistorySummarizer>();
+
+                if (_conversationHistorySummarizer == null)
+                {
+                    _conversationHistorySummarizer = gameObject.AddComponent<ConversationHistorySummarizer>();
+                }
+            }
+            
+            if (_conversationHistorySummarizer != null && _conversationHistoryStore != null)
+            {
+                _conversationHistorySummarizer.Initialize(_conversationHistoryStore);
+                Log("[QueryHandler] ConversationHistorySummarizer initialized with ConversationHistoryStore.");
+            }
+            else
+            {
+                LogError("[QueryHandler] Failed to initialize summarizer/store helper references.");
+            }
+            
+            _structuredAssistantResponseParser.SetLogLevel(CurrentLogLevel);
+            _conversationHistoryStore.SetLogLevel(CurrentLogLevel);
+            _conversationHistorySummarizer.SetLogLevel(CurrentLogLevel);
+            
+            _conversationHistorySummarizer.Initialize(_conversationHistoryStore);
         }
 
         [Button("Reset")]
@@ -150,7 +182,9 @@ namespace Runtime.Reasoning
 
                 AddConversationMessage("user", messageContent, userTimestamp);
                 AddConversationMessage("assistant", structuredAssistantResponse.reply, TimeUtility.GetCurrentLocalAustinTimeDisplay());
-                TrimConversationHistoryToLimit();
+
+                await SummarizeHistoryIfNeededAsync();
+
                 SaveHistoryToDisk();
 
                 if (structuredAssistantResponse.ConversationState == AssistantConversationState.Reset)
@@ -184,6 +218,40 @@ namespace Runtime.Reasoning
                     _thinkingIndicator.SetActive(false);
                 }
             }
+        }
+        
+        private async System.Threading.Tasks.Task SummarizeHistoryIfNeededAsync()
+        {
+            if (_conversationHistorySummarizer == null)
+            {
+                LogError("[QueryHandler] Cannot summarize history because _conversationHistorySummarizer is null.");
+                return;
+            }
+
+            Log("[QueryHandler] Checking whether history summarization is needed. " +
+                "Current message count: " + _conversationHistory.Count +
+                ", Max retained message count: " + _maxRetainedConversationMessages);
+
+            var previousConversationHistoryCount = _conversationHistory.Count;
+
+            var summarizedConversationHistory = await _conversationHistorySummarizer.SummarizeHistoryIfNeededAsync(
+                _conversationHistory,
+                _maxRetainedConversationMessages,
+                _fractionMessagesToTruncateWhenLimitHit,
+                _summarySizeLimitSentences,
+                _summaryPrefix,
+                "assistant");
+
+            _conversationHistory.Clear();
+            _conversationHistory.AddRange(summarizedConversationHistory);
+
+            Log("[QueryHandler] History summarization check complete. " +
+                "Previous count: " + previousConversationHistoryCount +
+                ", New count: " + _conversationHistory.Count);
+
+            RebuildInspectorConversationHistoryFromConversationHistory();
+            RefreshStats();
+            MarkDirty();
         }
 
         private void ExecuteToolsIfRequested(StructuredAssistantResponse structuredAssistantResponse)
@@ -322,7 +390,7 @@ namespace Runtime.Reasoning
             Log("[QueryHandler] Conversation history count included in outbound prompt: " + _conversationHistory.Count);
             Log("[QueryHandler] Current query source: " + source);
 
-            if (_includeSystemPrompt && !string.IsNullOrWhiteSpace(systemPrompt))
+            if (_includeSystemPrompt && !string.IsNullOrWhiteSpace(systemPromptWithTimeContext))
             {
                 outboundMessageHistory.Add(new OpenRouterChatClient.ChatMessage("system", systemPromptWithTimeContext));
             }
@@ -330,6 +398,16 @@ namespace Runtime.Reasoning
             for (var i = 0; i < _conversationHistory.Count; i++)
             {
                 var existingMessage = _conversationHistory[i];
+
+                if (_conversationHistoryStore.IsSummaryMessage(existingMessage, _summaryPrefix))
+                {
+                    outboundMessageHistory.Add(
+                        new OpenRouterChatClient.ChatMessage(
+                            existingMessage.Role,
+                            existingMessage.Content));
+
+                    continue;
+                }
 
                 outboundMessageHistory.Add(
                     new OpenRouterChatClient.ChatMessage(
@@ -380,27 +458,6 @@ namespace Runtime.Reasoning
             MarkDirty();
         }
 
-        private void TrimConversationHistoryToLimit()
-        {
-            if (_maxRetainedConversationMessages <= 0)
-            {
-                return;
-            }
-
-            while (_conversationHistory.Count > _maxRetainedConversationMessages)
-            {
-                _conversationHistory.RemoveAt(0);
-            }
-
-            while (_inspectorConversationHistory.Count > _maxRetainedConversationMessages)
-            {
-                _inspectorConversationHistory.RemoveAt(0);
-            }
-
-            RefreshStats();
-            MarkDirty();
-        }
-
         private void RefreshStats()
         {
             _storedConversationMessageCount = _conversationHistory.Count;
@@ -430,6 +487,27 @@ namespace Runtime.Reasoning
             }
         }
 
+        private void RebuildInspectorConversationHistoryFromConversationHistory()
+        {
+            _inspectorConversationHistory.Clear();
+
+            for (var i = 0; i < _conversationHistory.Count; i++)
+            {
+                var message = _conversationHistory[i];
+
+                if (message == null)
+                {
+                    continue;
+                }
+
+                _inspectorConversationHistory.Add(
+                    new InspectorChatMessage(
+                        message.Role,
+                        message.Content,
+                        message.LocalTimestampDisplay));
+            }
+        }
+
         private void LoadHistoryFromDisk()
         {
             _conversationHistory.Clear();
@@ -447,11 +525,9 @@ namespace Runtime.Reasoning
                 }
 
                 _conversationHistory.Add(message);
-                _inspectorConversationHistory.Add(
-                    new InspectorChatMessage(message.Role, message.Content, message.LocalTimestampDisplay));
             }
 
-            TrimConversationHistoryToLimit();
+            RebuildInspectorConversationHistoryFromConversationHistory();
             RefreshStats();
             MarkDirty();
         }

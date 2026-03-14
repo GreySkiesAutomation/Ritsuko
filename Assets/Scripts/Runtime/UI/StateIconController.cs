@@ -46,6 +46,9 @@ namespace Runtime.UI
         [SerializeField]
         private GameObject _presenceUnknownIcon;
         
+        [SerializeField]
+        private GameObject _longRunningTaskIcon;
+        
         private void Start()
         {
             SetInitialized();
@@ -69,6 +72,9 @@ namespace Runtime.UI
             _presencePresentIcon.SetActive(GlobalManager.I.State.PresenceState == PresenceState.Present);
             _presenceAbsentIcon.SetActive(GlobalManager.I.State.PresenceState == PresenceState.Absent);
             _presenceUnknownIcon.SetActive(GlobalManager.I.State.PresenceState == PresenceState.Unknown);
+            
+            _longRunningTaskIcon.SetActive(GlobalManager.I.State.IsRunningLongRunningTask);
+            
         }
     }
 }

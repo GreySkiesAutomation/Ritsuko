@@ -14,4 +14,4 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   Model: google/gemini-3-flash-preview
   Temperature: 0.7
-  MaxTokens: 65536
+  MaxTokens: 32768

@@ -1,3 +1,5 @@
+// Modified by ChatGPT and Riko Balakit/Pearl Grey
+
 using System;
 using System.Collections.Generic;
 using System.Net.Http;
@@ -8,6 +10,7 @@ using System.Threading.Tasks;
 using Configuration;
 using Newtonsoft.Json;
 using UnityEngine;
+
 namespace Runtime.Reasoning
 {
     public class OpenRouterChatClient : PearlBehaviour
@@ -37,7 +40,7 @@ namespace Runtime.Reasoning
 
         private static HttpClient s_httpClient;
         private CancellationTokenSource _activeRequestCancellationTokenSource;
-        
+
         private void Start()
         {
             SetInitialized();
@@ -76,7 +79,7 @@ namespace Runtime.Reasoning
             var selectedModel = configuration.Model;
             var selectedTemperature = configuration.Temperature;
             var selectedMaxTokens = configuration.MaxTokens;
-            
+
             if (string.IsNullOrWhiteSpace(selectedModel))
             {
                 throw new Exception("Model is empty.");
@@ -145,11 +148,6 @@ namespace Runtime.Reasoning
             }
             finally
             {
-                if (httpResponse != null)
-                {
-                    httpResponse.Dispose();
-                }
-
                 httpRequest.Dispose();
 
                 if (_activeRequestCancellationTokenSource != null)
@@ -159,12 +157,21 @@ namespace Runtime.Reasoning
                 }
             }
 
+            if (httpResponse == null)
+            {
+                throw new Exception("OpenRouter response was null.");
+            }
+
             if (!httpResponse.IsSuccessStatusCode)
             {
-                throw new Exception("OpenRouter error: " + (int)httpResponse.StatusCode + " " + httpResponse.ReasonPhrase + "\n" + responseText);
+                var errorMessage = "OpenRouter error: " + (int)httpResponse.StatusCode + " " + httpResponse.ReasonPhrase + "\n" + responseText;
+                httpResponse.Dispose();
+                throw new Exception(errorMessage);
             }
 
             var parsed = JsonConvert.DeserializeObject<ChatCompletionsResponse>(responseText);
+
+            httpResponse.Dispose();
 
             if (parsed == null ||
                 parsed.choices == null ||
@@ -173,6 +180,14 @@ namespace Runtime.Reasoning
                 parsed.choices[0].message == null)
             {
                 throw new Exception("OpenRouter response missing choices/message.\n" + responseText);
+            }
+
+            if (parsed.usage != null)
+            {
+                Debug.Log(
+                    "[OpenRouterChatClient] Prompt tokens: " + parsed.usage.prompt_tokens +
+                    ", Completion tokens: " + parsed.usage.completion_tokens +
+                    ", Total tokens: " + parsed.usage.total_tokens);
             }
 
             return parsed.choices[0].message.content ?? "";
@@ -202,6 +217,7 @@ namespace Runtime.Reasoning
         private class ChatCompletionsResponse
         {
             public Choice[] choices;
+            public Usage usage;
         }
 
         [Serializable]
@@ -209,5 +225,15 @@ namespace Runtime.Reasoning
         {
             public ChatMessage message;
         }
+
+        [Serializable]
+        private class Usage
+        {
+            public int prompt_tokens;
+            public int completion_tokens;
+            public int total_tokens;
+        }
     }
 }
+
+// Modified by ChatGPT and Riko Balakit/Pearl Grey

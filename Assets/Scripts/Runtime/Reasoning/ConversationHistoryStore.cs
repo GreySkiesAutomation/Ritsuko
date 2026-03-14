@@ -93,6 +93,54 @@ namespace Runtime.Reasoning
             }
         }
 
+        public bool IsSummaryMessage(ConversationMessage conversationMessage, string summaryPrefix)
+        {
+            if (conversationMessage == null)
+            {
+                return false;
+            }
+
+            if (string.IsNullOrWhiteSpace(conversationMessage.Content))
+            {
+                return false;
+            }
+
+            return conversationMessage.Content.StartsWith(summaryPrefix, StringComparison.OrdinalIgnoreCase);
+        }
+
+        public ConversationMessage CreateSummaryConversationMessage(string summaryPrefix, string summaryBody, string assistantRole)
+        {
+            var cleanedSummaryBody = string.IsNullOrWhiteSpace(summaryBody)
+                ? "No older interactions were available for summarization."
+                : summaryBody.Trim();
+
+            var summaryContent = summaryPrefix + ":\n" + cleanedSummaryBody;
+
+            return new ConversationMessage(assistantRole, summaryContent, string.Empty);
+        }
+
+        public string ExtractSummaryBody(string summaryContent, string summaryPrefix)
+        {
+            if (string.IsNullOrWhiteSpace(summaryContent))
+            {
+                return string.Empty;
+            }
+
+            if (!summaryContent.StartsWith(summaryPrefix, StringComparison.OrdinalIgnoreCase))
+            {
+                return summaryContent;
+            }
+
+            var strippedSummary = summaryContent.Substring(summaryPrefix.Length).TrimStart();
+
+            if (strippedSummary.StartsWith(":"))
+            {
+                strippedSummary = strippedSummary.Substring(1).TrimStart();
+            }
+
+            return strippedSummary;
+        }
+
         private string GetHistoryFilePath(string historyFileName)
         {
             var directoryPath = Application.persistentDataPath;
