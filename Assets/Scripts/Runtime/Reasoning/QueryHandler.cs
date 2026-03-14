@@ -2,11 +2,9 @@
 
 using System;
 using System.Collections.Generic;
-using System.IO;
 using Configuration;
 using NaughtyAttributes;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Converters;
 using Runtime.Reasoning.DataTypes;
 using Runtime.Utilities;
 using UnityEngine;
@@ -41,16 +39,48 @@ namespace Runtime.Reasoning
         [Header("Inspector Conversation History")]
         [SerializeField] private List<InspectorChatMessage> _inspectorConversationHistory = new List<InspectorChatMessage>();
 
+        [Header("Helpers")]
+        [SerializeField] private StructuredAssistantResponseParser _structuredAssistantResponseParser;
+        [SerializeField] private ConversationHistoryStore _conversationHistoryStore;
+
         private readonly List<ConversationMessage> _conversationHistory = new List<ConversationMessage>();
 
         public void Initialize()
         {
+            InitializeHelperComponents();
+
             LoadHistoryFromDisk();
             RefreshStats();
 
-            _thinkingIndicator.SetActive(false);
+            if (_thinkingIndicator != null)
+            {
+                _thinkingIndicator.SetActive(false);
+            }
 
             SetInitialized();
+        }
+
+        private void InitializeHelperComponents()
+        {
+            if (_structuredAssistantResponseParser == null)
+            {
+                _structuredAssistantResponseParser = GetComponent<StructuredAssistantResponseParser>();
+
+                if (_structuredAssistantResponseParser == null)
+                {
+                    _structuredAssistantResponseParser = gameObject.AddComponent<StructuredAssistantResponseParser>();
+                }
+            }
+
+            if (_conversationHistoryStore == null)
+            {
+                _conversationHistoryStore = GetComponent<ConversationHistoryStore>();
+
+                if (_conversationHistoryStore == null)
+                {
+                    _conversationHistoryStore = gameObject.AddComponent<ConversationHistoryStore>();
+                }
+            }
         }
 
         [Button("Reset")]
@@ -91,7 +121,10 @@ namespace Runtime.Reasoning
 
                 string rawResponse = null;
 
-                _thinkingIndicator.SetActive(true);
+                if (_thinkingIndicator != null)
+                {
+                    _thinkingIndicator.SetActive(true);
+                }
 
                 for (var attemptIndex = 0; attemptIndex < _maxJsonParseAttempts; attemptIndex++)
                 {
@@ -101,7 +134,7 @@ namespace Runtime.Reasoning
 
                     Log("[QueryHandler] Raw LLM response attempt " + (attemptIndex + 1) + ": " + rawResponse);
 
-                    if (TryParseStructuredAssistantResponse(rawResponse, out structuredAssistantResponse))
+                    if (_structuredAssistantResponseParser.TryParseStructuredAssistantResponse(rawResponse, out structuredAssistantResponse))
                     {
                         break;
                     }
@@ -146,7 +179,10 @@ namespace Runtime.Reasoning
             }
             finally
             {
-                _thinkingIndicator.SetActive(false);
+                if (_thinkingIndicator != null)
+                {
+                    _thinkingIndicator.SetActive(false);
+                }
             }
         }
 
@@ -332,124 +368,6 @@ namespace Runtime.Reasoning
             return JsonConvert.SerializeObject(messageEnvelope, Formatting.None);
         }
 
-        private bool TryParseStructuredAssistantResponse(string rawResponse, out StructuredAssistantResponse structuredAssistantResponse)
-        {
-            structuredAssistantResponse = null;
-
-            Log("[QueryHandler] TryParseStructuredAssistantResponse called.");
-
-            if (string.IsNullOrWhiteSpace(rawResponse))
-            {
-                LogWarning("[QueryHandler] rawResponse was null or whitespace.");
-                return false;
-            }
-
-            Log("[QueryHandler] rawResponse length: " + rawResponse.Length);
-            Log("[QueryHandler] rawResponse preview: " + rawResponse.Substring(0, Math.Min(rawResponse.Length, 500)));
-
-            var cleanedJson = ExtractLikelyJsonObject(rawResponse);
-
-            if (string.IsNullOrWhiteSpace(cleanedJson))
-            {
-                LogWarning("[QueryHandler] ExtractLikelyJsonObject returned null or whitespace.");
-                return false;
-            }
-
-            Log("[QueryHandler] cleanedJson length: " + cleanedJson.Length);
-            Log("[QueryHandler] cleanedJson preview: " + cleanedJson.Substring(0, Math.Min(cleanedJson.Length, 500)));
-
-            try
-            {
-                Log("[QueryHandler] Attempting JSON deserialization into StructuredAssistantResponse...");
-
-                var parsedResponse = JsonConvert.DeserializeObject<StructuredAssistantResponse>(cleanedJson);
-
-                if (parsedResponse == null)
-                {
-                    LogWarning("[QueryHandler] Deserialization succeeded but parsedResponse was null.");
-                    return false;
-                }
-
-                Log("[QueryHandler] Deserialization succeeded.");
-
-                if (string.IsNullOrWhiteSpace(parsedResponse.reply))
-                {
-                    LogWarning("[QueryHandler] parsedResponse.reply was null or whitespace.");
-                    return false;
-                }
-
-                Log("[QueryHandler] parsedResponse.reply: " + parsedResponse.reply);
-
-                if (parsedResponse.ToolCalls == null)
-                {
-                    Log("[QueryHandler] parsedResponse.ToolCalls was null. Initializing empty list.");
-                    parsedResponse.ToolCalls = new List<StructuredToolCall>();
-                }
-
-                Log("[QueryHandler] parsedResponse.ToolCalls count: " + parsedResponse.ToolCalls.Count);
-
-                for (var i = 0; i < parsedResponse.ToolCalls.Count; i++)
-                {
-                    var toolCall = parsedResponse.ToolCalls[i];
-
-                    if (toolCall == null)
-                    {
-                        LogWarning("[QueryHandler] ToolCalls[" + i + "] was null.");
-                        continue;
-                    }
-
-                    Log("[QueryHandler] ToolCalls[" + i + "] toolName: " + toolCall.ToolName);
-
-                    if (toolCall.ToolPayload != null)
-                    {
-                        Log("[QueryHandler] ToolCalls[" + i + "] payload: " + JsonConvert.SerializeObject(toolCall.ToolPayload));
-                    }
-                    else
-                    {
-                        Log("[QueryHandler] ToolCalls[" + i + "] payload was null.");
-                    }
-                }
-
-                parsedResponse.reply = parsedResponse.reply.Trim();
-
-                structuredAssistantResponse = parsedResponse;
-
-                Log("[QueryHandler] StructuredAssistantResponse parsing succeeded.");
-
-                return true;
-            }
-            catch (Exception exception)
-            {
-                LogWarning("[QueryHandler] JSON parse exception full: " + exception);
-                LogWarning("[QueryHandler] JSON parse exception type: " + exception.GetType().FullName);
-                LogWarning("[QueryHandler] JSON parse exception message: " + exception.Message);
-                LogWarning("[QueryHandler] JSON parse exception stack: " + exception.StackTrace);
-                LogWarning("[QueryHandler] JSON that failed to deserialize:\n" + cleanedJson);
-
-                return false;
-            }
-        }
-
-        private string ExtractLikelyJsonObject(string rawResponse)
-        {
-            if (string.IsNullOrWhiteSpace(rawResponse))
-            {
-                return null;
-            }
-
-            var trimmedResponse = rawResponse.Trim();
-
-            var firstBraceIndex = trimmedResponse.IndexOf('{');
-            var lastBraceIndex = trimmedResponse.LastIndexOf('}');
-
-            if (firstBraceIndex >= 0 && lastBraceIndex > firstBraceIndex)
-            {
-                return trimmedResponse.Substring(firstBraceIndex, lastBraceIndex - firstBraceIndex + 1);
-            }
-
-            return null;
-        }
-
         private void AddConversationMessage(string role, string content, string localTimestampDisplay)
         {
             var conversationMessage = new ConversationMessage(role, content, localTimestampDisplay);
@@ -512,112 +430,35 @@ namespace Runtime.Reasoning
             }
         }
 
-        private string GetHistoryFilePath()
-        {
-            var directoryPath = Application.persistentDataPath;
-
-            try
-            {
-                if (!Directory.Exists(directoryPath))
-                {
-                    Directory.CreateDirectory(directoryPath);
-                }
-            }
-            catch (Exception exception)
-            {
-                LogWarning("[QueryHandler] Failed to ensure persistence directory exists: " + exception.Message);
-            }
-
-            return Path.Combine(directoryPath, _historyFileName);
-        }
-
         private void LoadHistoryFromDisk()
         {
             _conversationHistory.Clear();
             _inspectorConversationHistory.Clear();
 
-            var filePath = GetHistoryFilePath();
+            var loadedHistory = _conversationHistoryStore.LoadConversationHistory(_historyFileName);
 
-            if (!File.Exists(filePath))
+            for (var i = 0; i < loadedHistory.Count; i++)
             {
-                Log("[QueryHandler] No existing conversation history file found at: " + filePath);
-                MarkDirty();
-                return;
-            }
+                var message = loadedHistory[i];
 
-            try
-            {
-                var json = File.ReadAllText(filePath);
-
-                if (string.IsNullOrWhiteSpace(json))
+                if (message == null)
                 {
-                    LogWarning("[QueryHandler] Conversation history file was empty.");
-                    MarkDirty();
-                    return;
+                    continue;
                 }
 
-                var fileData = JsonConvert.DeserializeObject<ConversationHistoryFileData>(json);
-
-                if (fileData?.ConversationHistory == null)
-                {
-                    LogWarning("[QueryHandler] Conversation history file did not contain valid history data.");
-                    MarkDirty();
-                    return;
-                }
-
-                for (var i = 0; i < fileData.ConversationHistory.Count; i++)
-                {
-                    var message = fileData.ConversationHistory[i];
-
-                    if (message == null)
-                    {
-                        continue;
-                    }
-
-                    _conversationHistory.Add(message);
-                    _inspectorConversationHistory.Add(
-                        new InspectorChatMessage(message.Role, message.Content, message.LocalTimestampDisplay));
-                }
-
-                TrimConversationHistoryToLimit();
-                Log("[QueryHandler] Loaded conversation history from disk: " + filePath);
-            }
-            catch (Exception exception)
-            {
-                LogError("[QueryHandler] Failed to load conversation history: " + exception);
+                _conversationHistory.Add(message);
+                _inspectorConversationHistory.Add(
+                    new InspectorChatMessage(message.Role, message.Content, message.LocalTimestampDisplay));
             }
 
+            TrimConversationHistoryToLimit();
             RefreshStats();
             MarkDirty();
         }
 
         private void SaveHistoryToDisk()
         {
-            var filePath = GetHistoryFilePath();
-
-            try
-            {
-                var fileData = new ConversationHistoryFileData
-                {
-                    ConversationHistory = new List<ConversationMessage>(_conversationHistory)
-                };
-
-                var json = JsonConvert.SerializeObject(fileData, Formatting.Indented);
-                var tempFilePath = filePath + ".tmp";
-
-                File.WriteAllText(tempFilePath, json);
-
-                if (File.Exists(filePath))
-                {
-                    File.Delete(filePath);
-                }
-
-                File.Move(tempFilePath, filePath);
-            }
-            catch (Exception exception)
-            {
-                LogError("[QueryHandler] Failed to save conversation history: " + exception);
-            }
+            _conversationHistoryStore.SaveConversationHistory(_historyFileName, _conversationHistory);
 
             RefreshStats();
             MarkDirty();
@@ -631,105 +472,7 @@ namespace Runtime.Reasoning
 #else
         private void MarkDirty() {}
 #endif
-
-        [Serializable]
-        private class ModelInputMessageEnvelope
-        {
-            public string local_time_austin;
-            public string current_query_source;
-            public string message;
-        }
-
-        [Serializable]
-        public class ConversationMessage
-        {
-            public string Role;
-            public string Content;
-            public string LocalTimestampDisplay;
-
-            public ConversationMessage(string role, string content, string localTimestampDisplay)
-            {
-                Role = role;
-                Content = content;
-                LocalTimestampDisplay = localTimestampDisplay;
-            }
-        }
-
-        [Serializable]
-        public class InspectorChatMessage
-        {
-            [ReadOnly]
-            [SerializeField] private string _role;
-
-            [ReadOnly]
-            [SerializeField] private string _localTimestampDisplay;
-
-            [TextArea(2, 8)]
-            [ReadOnly]
-            [SerializeField] private string _content;
-
-            public string Role => _role;
-            public string LocalTimestampDisplay => _localTimestampDisplay;
-            public string Content => _content;
-
-            public InspectorChatMessage(string role, string content, string localTimestampDisplay)
-            {
-                _role = role;
-                _content = content;
-                _localTimestampDisplay = localTimestampDisplay;
-            }
-        }
-
-        [JsonConverter(typeof(StringEnumConverter))]
-        public enum AssistantConversationState
-        {
-            Continue,
-            End,
-            Reset
-        }
-
-        [JsonConverter(typeof(StringEnumConverter))]
-        public enum AssistantEmotionResponse
-        {
-            Neutral,
-            Pissed,
-            MildlyHappy,
-            Ecstatic,
-            Annoyed,
-            Surprised
-        }
-
-        [Serializable]
-        public class StructuredAssistantResponse
-        {
-            public string reply;
-
-            [JsonProperty("conversationState")]
-            public AssistantConversationState ConversationState = AssistantConversationState.Continue;
-
-            [JsonProperty("emotion")]
-            public AssistantEmotionResponse Emotion = AssistantEmotionResponse.Neutral;
-
-            [JsonProperty("toolCalls")]
-            public List<StructuredToolCall> ToolCalls = new List<StructuredToolCall>();
-        }
-
-        [Serializable]
-        public class StructuredToolCall
-        {
-            [JsonProperty("toolName")]
-            public string ToolName = "None";
-
-            [JsonProperty("toolPayload")]
-            public object ToolPayload;
-        }
-
-        [Serializable]
-        public class ConversationHistoryFileData
-        {
-            public List<ConversationMessage> ConversationHistory = new List<ConversationMessage>();
-        }
     }
 }
 
-// Generated by ChatGPT and Riko Balakit/Pearl Grey```
+// Generated by ChatGPT and Riko Balakit/Pearl Grey

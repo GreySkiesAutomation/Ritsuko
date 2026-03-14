@@ -123,5 +123,22 @@ namespace Runtime
                 _onChanged?.Invoke();
             }
         }
+        
+        private bool _isPerformingLongRunningTask = false;
+
+        public bool IsPerformingLongRunningTask
+        {
+            get => _isPerformingLongRunningTask;
+            set
+            {
+                if (_isPerformingLongRunningTask == value)
+                {
+                    return;
+                }
+
+                _isPerformingLongRunningTask = value;
+                _onChanged?.Invoke();
+            }
+        }
     }
 }

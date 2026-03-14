@@ -5,6 +5,7 @@ using NaughtyAttributes;
 using TMPro;
 using UnityEngine;
 using Runtime.Reasoning;
+using Runtime.Reasoning.DataTypes;
 
 namespace Runtime.Avatar
 {
@@ -19,7 +20,7 @@ namespace Runtime.Avatar
 
         [Header("Reply")]
         [ReadOnly]
-        [SerializeField] private QueryHandler.AssistantEmotionResponse _emotion = QueryHandler.AssistantEmotionResponse.Neutral;
+        [SerializeField] private AssistantEmotionResponse _emotion = AssistantEmotionResponse.Neutral;
 
         [SerializeField] private TMP_Text _dialogText;
 
@@ -30,7 +31,7 @@ namespace Runtime.Avatar
 
         public void SendPhraseAndEmotion(
             string thingToSpeak,
-            QueryHandler.AssistantEmotionResponse emotion,
+            AssistantEmotionResponse emotion,
             bool promptAfterwards = false)
         {
             _thingToSpeak = thingToSpeak;
@@ -83,26 +84,26 @@ namespace Runtime.Avatar
             MarkDirty();
         }
 
-        private void ApplyEmotion(QueryHandler.AssistantEmotionResponse emotion)
+        private void ApplyEmotion(AssistantEmotionResponse emotion)
         {
             switch (emotion)
             {
-                case QueryHandler.AssistantEmotionResponse.Neutral:
+                case AssistantEmotionResponse.Neutral:
                     GlobalManager.I.AvatarController.SetEmotionNeutral();
                     break;
-                case QueryHandler.AssistantEmotionResponse.Pissed:
+                case AssistantEmotionResponse.Pissed:
                     GlobalManager.I.AvatarController.SetEmotionPissed();
                     break;
-                case QueryHandler.AssistantEmotionResponse.MildlyHappy:
+                case AssistantEmotionResponse.MildlyHappy:
                     GlobalManager.I.AvatarController.SetEmotionGlad();
                     break;
-                case QueryHandler.AssistantEmotionResponse.Ecstatic:
+                case AssistantEmotionResponse.Ecstatic:
                     GlobalManager.I.AvatarController.SetEmotionEcstatic();
                     break;
-                case QueryHandler.AssistantEmotionResponse.Annoyed:
+                case AssistantEmotionResponse.Annoyed:
                     GlobalManager.I.AvatarController.SetEmotionAnnoyed();
                     break;
-                case QueryHandler.AssistantEmotionResponse.Surprised:
+                case AssistantEmotionResponse.Surprised:
                     GlobalManager.I.AvatarController.SetEmotionSurprised();
                     break;
                 default:
