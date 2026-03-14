@@ -32,6 +32,7 @@ MonoBehaviour:
   AzureTtsRegion: eastus
   AzureTtsVoiceName: en-US-PhoebeMultilingualNeural
   ElevenLabsTtsVoiceId: gJx1vCzNCD1EQHT212Ls
+  ElevenLabsTtsVoiceSexyId: 4tRn1lSkEn13EVTuqb0g
   ElevenLabsTtsModelId: eleven_flash_v2_5
   OpenRouterBaseUrl: https://openrouter.ai/api/v1/chat/completions
   LlmModelStandard: {fileID: 11400000, guid: 8e2a6b1ba1a193e4a8b6dfe340830b4b, type: 2}

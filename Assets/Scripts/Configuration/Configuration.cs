@@ -39,6 +39,7 @@ namespace Configuration
 
         [Header("ElevenLabs TTS")]
         public string ElevenLabsTtsVoiceId = "EXAVITQu4vr4xnSDxMaL";
+        public string ElevenLabsTtsVoiceSexyId = "EXAVITQu4vr4xnSDxMaL";
         public string ElevenLabsTtsModelId = "eleven_flash_v2";
         
         [Header("OpenRouter LLM")]
