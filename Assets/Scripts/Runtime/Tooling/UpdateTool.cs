@@ -86,13 +86,9 @@ namespace Runtime.Tooling
                     _updateToolIndicatorText.text = $"Updating in {remainingSeconds} seconds...";
                 }
 
-                if (remainingSeconds == 5)
-                {
-                    TriggerExternalUpdateScriptOrSimulation();
-                }
-
                 if (remainingSeconds == 0)
                 {
+                    TriggerExternalUpdateScriptOrSimulation();
                     yield return new WaitForSeconds(1.0f);
                     QuitApplicationOrExitPlayMode();
                     yield break;
