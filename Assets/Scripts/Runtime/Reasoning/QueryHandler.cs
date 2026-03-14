@@ -7,7 +7,6 @@ using Configuration;
 using NaughtyAttributes;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
-using Newtonsoft.Json.Linq;
 using Runtime.Reasoning.DataTypes;
 using Runtime.Utilities;
 using UnityEngine;
@@ -131,7 +130,7 @@ namespace Runtime.Reasoning
                     source,
                     structuredAssistantResponse.ConversationState != AssistantConversationState.End);
 
-                ExecuteToolIfRequested(structuredAssistantResponse);
+                ExecuteToolsIfRequested(structuredAssistantResponse);
 
                 if (structuredAssistantResponse.ConversationState == AssistantConversationState.End)
                 {
@@ -148,53 +147,84 @@ namespace Runtime.Reasoning
             }
         }
 
-        private void ExecuteToolIfRequested(StructuredAssistantResponse structuredAssistantResponse)
+        private void ExecuteToolsIfRequested(StructuredAssistantResponse structuredAssistantResponse)
         {
             if (structuredAssistantResponse == null)
             {
                 return;
             }
 
-            if (string.IsNullOrWhiteSpace(structuredAssistantResponse.ToolName))
+            if (structuredAssistantResponse.ToolCalls == null || structuredAssistantResponse.ToolCalls.Count == 0)
             {
-                Log("[QueryHandler] No tool name provided. Skipping tool execution.");
+                Log("[QueryHandler] No tools requested.");
                 return;
             }
 
-            if (string.Equals(structuredAssistantResponse.ToolName, "None", StringComparison.OrdinalIgnoreCase))
+            var toolCallsToExecute = new List<StructuredToolCall>();
+
+            for (var i = 0; i < structuredAssistantResponse.ToolCalls.Count; i++)
             {
-                Log("[QueryHandler] No tool requested.");
-                return;
-            }
+                var toolCall = structuredAssistantResponse.ToolCalls[i];
 
-            var payloadJson = structuredAssistantResponse.ToolPayload == null
-                ? "{}"
-                : structuredAssistantResponse.ToolPayload.ToString(Formatting.None);
-
-            Log("[QueryHandler] Tool requested: " + structuredAssistantResponse.ToolName);
-            Log("[QueryHandler] Tool payload: " + payloadJson);
-
-            var toolExecutedSuccessfully = GlobalManager.I.ToolRouter.TryExecuteTool(
-                structuredAssistantResponse.ToolName,
-                payloadJson,
-                out var executionSummary);
-
-            if (toolExecutedSuccessfully)
-            {
-                Log("[QueryHandler] Tool executed successfully. Summary: " + executionSummary);
-
-                if (_auditHistoryToDiscord && !string.IsNullOrWhiteSpace(executionSummary))
+                if (toolCall == null)
                 {
-                    GlobalManager.I.DiscordClient.SendDirectMessage("**Tool execution:** " + executionSummary);
+                    continue;
                 }
-            }
-            else
-            {
-                LogWarning("[QueryHandler] Tool execution failed. Summary: " + executionSummary);
 
-                if (_auditHistoryToDiscord && !string.IsNullOrWhiteSpace(executionSummary))
+                if (string.IsNullOrWhiteSpace(toolCall.ToolName))
                 {
-                    GlobalManager.I.DiscordClient.SendDirectMessage("**Tool execution failed:** " + executionSummary);
+                    LogWarning("[QueryHandler] Tool call at index " + i + " had empty toolName. Skipping.");
+                    continue;
+                }
+
+                if (string.Equals(toolCall.ToolName, "None", StringComparison.OrdinalIgnoreCase))
+                {
+                    Log("[QueryHandler] Tool call at index " + i + " explicitly requested None. Skipping.");
+                    continue;
+                }
+
+                toolCallsToExecute.Add(toolCall);
+            }
+
+            if (toolCallsToExecute.Count == 0)
+            {
+                Log("[QueryHandler] No executable tool calls remained after filtering.");
+                return;
+            }
+
+            for (var i = 0; i < toolCallsToExecute.Count; i++)
+            {
+                var toolCall = toolCallsToExecute[i];
+
+                var payloadJson = toolCall.ToolPayload == null
+                    ? "{}"
+                    : JsonConvert.SerializeObject(toolCall.ToolPayload);
+
+                Log("[QueryHandler] Executing tool call " + (i + 1) + "/" + toolCallsToExecute.Count + ": " + toolCall.ToolName);
+                Log("[QueryHandler] Tool payload: " + payloadJson);
+
+                var toolExecutedSuccessfully = GlobalManager.I.ToolRouter.TryExecuteTool(
+                    toolCall.ToolName,
+                    payloadJson,
+                    out var executionSummary);
+
+                if (toolExecutedSuccessfully)
+                {
+                    Log("[QueryHandler] Tool executed successfully. Summary: " + executionSummary);
+
+                    if (_auditHistoryToDiscord && !string.IsNullOrWhiteSpace(executionSummary))
+                    {
+                        GlobalManager.I.DiscordClient.SendDirectMessage("**Tool execution:** " + executionSummary);
+                    }
+                }
+                else
+                {
+                    LogWarning("[QueryHandler] Tool execution failed. Summary: " + executionSummary);
+
+                    if (_auditHistoryToDiscord && !string.IsNullOrWhiteSpace(executionSummary))
+                    {
+                        GlobalManager.I.DiscordClient.SendDirectMessage("**Tool execution failed:** " + executionSummary);
+                    }
                 }
             }
         }
@@ -299,50 +329,96 @@ namespace Runtime.Reasoning
         {
             structuredAssistantResponse = null;
 
+            Log("[QueryHandler] TryParseStructuredAssistantResponse called.");
+
             if (string.IsNullOrWhiteSpace(rawResponse))
             {
+                LogWarning("[QueryHandler] rawResponse was null or whitespace.");
                 return false;
             }
+
+            Log("[QueryHandler] rawResponse length: " + rawResponse.Length);
+            Log("[QueryHandler] rawResponse preview: " + rawResponse.Substring(0, Math.Min(rawResponse.Length, 500)));
 
             var cleanedJson = ExtractLikelyJsonObject(rawResponse);
 
             if (string.IsNullOrWhiteSpace(cleanedJson))
             {
+                LogWarning("[QueryHandler] ExtractLikelyJsonObject returned null or whitespace.");
                 return false;
             }
 
+            Log("[QueryHandler] cleanedJson length: " + cleanedJson.Length);
+            Log("[QueryHandler] cleanedJson preview: " + cleanedJson.Substring(0, Math.Min(cleanedJson.Length, 500)));
+
             try
             {
+                Log("[QueryHandler] Attempting JSON deserialization into StructuredAssistantResponse...");
+
                 var parsedResponse = JsonConvert.DeserializeObject<StructuredAssistantResponse>(cleanedJson);
 
                 if (parsedResponse == null)
                 {
+                    LogWarning("[QueryHandler] Deserialization succeeded but parsedResponse was null.");
                     return false;
                 }
+
+                Log("[QueryHandler] Deserialization succeeded.");
 
                 if (string.IsNullOrWhiteSpace(parsedResponse.reply))
                 {
+                    LogWarning("[QueryHandler] parsedResponse.reply was null or whitespace.");
                     return false;
                 }
 
-                if (string.IsNullOrWhiteSpace(parsedResponse.ToolName))
+                Log("[QueryHandler] parsedResponse.reply: " + parsedResponse.reply);
+
+                if (parsedResponse.ToolCalls == null)
                 {
-                    return false;
+                    Log("[QueryHandler] parsedResponse.ToolCalls was null. Initializing empty list.");
+                    parsedResponse.ToolCalls = new List<StructuredToolCall>();
                 }
 
-                if (parsedResponse.ToolPayload == null)
+                Log("[QueryHandler] parsedResponse.ToolCalls count: " + parsedResponse.ToolCalls.Count);
+
+                for (var i = 0; i < parsedResponse.ToolCalls.Count; i++)
                 {
-                    return false;
+                    var toolCall = parsedResponse.ToolCalls[i];
+
+                    if (toolCall == null)
+                    {
+                        LogWarning("[QueryHandler] ToolCalls[" + i + "] was null.");
+                        continue;
+                    }
+
+                    Log("[QueryHandler] ToolCalls[" + i + "] toolName: " + toolCall.ToolName);
+
+                    if (toolCall.ToolPayload != null)
+                    {
+                        Log("[QueryHandler] ToolCalls[" + i + "] payload: " + JsonConvert.SerializeObject(toolCall.ToolPayload));
+                    }
+                    else
+                    {
+                        Log("[QueryHandler] ToolCalls[" + i + "] payload was null.");
+                    }
                 }
 
                 parsedResponse.reply = parsedResponse.reply.Trim();
 
                 structuredAssistantResponse = parsedResponse;
+
+                Log("[QueryHandler] StructuredAssistantResponse parsing succeeded.");
+
                 return true;
             }
             catch (Exception exception)
             {
-                LogWarning("[QueryHandler] JSON parse exception: " + exception.Message);
+                LogWarning("[QueryHandler] JSON parse exception full: " + exception);
+                LogWarning("[QueryHandler] JSON parse exception type: " + exception.GetType().FullName);
+                LogWarning("[QueryHandler] JSON parse exception message: " + exception.Message);
+                LogWarning("[QueryHandler] JSON parse exception stack: " + exception.StackTrace);
+                LogWarning("[QueryHandler] JSON that failed to deserialize:\n" + cleanedJson);
+
                 return false;
             }
         }
@@ -617,7 +693,7 @@ namespace Runtime.Reasoning
         }
 
         [Serializable]
-        private class StructuredAssistantResponse
+        public class StructuredAssistantResponse
         {
             public string reply;
 
@@ -627,15 +703,22 @@ namespace Runtime.Reasoning
             [JsonProperty("emotion")]
             public AssistantEmotionResponse Emotion = AssistantEmotionResponse.Neutral;
 
+            [JsonProperty("toolCalls")]
+            public List<StructuredToolCall> ToolCalls = new List<StructuredToolCall>();
+        }
+
+        [Serializable]
+        public class StructuredToolCall
+        {
             [JsonProperty("toolName")]
             public string ToolName = "None";
 
             [JsonProperty("toolPayload")]
-            public JToken ToolPayload = new JObject();
+            public object ToolPayload = new object();
         }
 
         [Serializable]
-        private class ConversationHistoryFileData
+        public class ConversationHistoryFileData
         {
             public List<ConversationMessage> ConversationHistory = new List<ConversationMessage>();
         }

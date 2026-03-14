@@ -788,6 +788,7 @@ MonoBehaviour:
   CurrentLogLevel: 2
   m_statusReadOnly: 
   _toolName: LogSendTool
+  _toolPriority: 0
   _descriptionForPrompt: 'Use this tool when the user asks to see logs. The tool
     opens the platform default text editor so the user may inspect it.
 
@@ -846,15 +847,16 @@ MonoBehaviour:
   CurrentLogLevel: 2
   m_statusReadOnly: 
   _toolName: SettingsTool
+  _toolPriority: 0
   _descriptionForPrompt: Use this tool to change assistant settings such as behavior
     mode, Quiet Mode, Audit Mode, or whether the assistant responds to its name.
     Use this whenever the user explicitly asks to enable, disable, or change one
     of these settings.
-  _jsonPayloadExampleForPrompt: "A valid example:\n{\n  \"settingName\": \"QuietMode\",\n 
-    \"value\": \"On\"\n}\n\nAnother valid example:\n{\n  \"settingName\": \"AuditMode\",\n 
-    \"value\": \"Off\"\n}\n\nAnother valid example:\n{\n  \"settingName\": \"Mode\",\n 
-    \"value\": \"ProductiveWork\"\n}\n\nAnother valid example:\n{\n  \"settingName\":
-    \"RespondToName\",\n  \"value\": \"On\"\n}"
+  _jsonPayloadExampleForPrompt: "A valid single-setting example:\n{\n  \"settingName\":
+    \"QuietMode\",\n  \"value\": \"On\"\n}\n\nA valid multi-setting example:\n[\n 
+    {\n    \"settingName\": \"Mode\",\n    \"value\": \"ProductiveWork\"\n  },\n 
+    {\n    \"settingName\": \"AuditMode\",\n    \"value\": \"On\"\n  },\n  {\n   
+    \"settingName\": \"RespondToName\",\n    \"value\": \"Off\"\n  }\n]"
 --- !u!1 &167445101
 GameObject:
   m_ObjectHideFlags: 0
@@ -4620,6 +4622,7 @@ MonoBehaviour:
   CurrentLogLevel: 2
   m_statusReadOnly: 
   _toolName: ToDoListDisplayTool
+  _toolPriority: 1000
   _descriptionForPrompt: "Use this tool when the user asks to see, show, or hide
     the full to-do list. This displays the task list in a large UI view instead of
     returning it in the assistant reply.\n\nWhen showing the list, return the tasks
@@ -7560,8 +7563,6 @@ MonoBehaviour:
   _presencePresentIcon: {fileID: 374844384}
   _presenceAbsentIcon: {fileID: 1504120233}
   _presenceUnknownIcon: {fileID: 1888927663}
-  _openClawConnectedIcon: {fileID: 0}
-  _openClawDisconnectedIcon: {fileID: 0}
 --- !u!1 &1949976923
 GameObject:
   m_ObjectHideFlags: 0

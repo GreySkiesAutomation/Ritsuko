@@ -62,45 +62,45 @@ MonoBehaviour:
     source '
   ResponseFormatInstructions: "You must return ONLY valid JSON with exactly these
     fields:\n\n{\n  \"reply\": \"string\",\n  \"conversationState\": \"Continue|End|Reset\",\n 
-    \"emotion\": \"Neutral|Pissed|MildlyHappy|Ecstatic|Annoyed|Surprised\",\n  \"toolName\":
-    \"string\",\n  \"toolPayload\": {}\n}\n\nRules:\n\nReturn raw JSON only.\n\nDo
-    not wrap JSON in markdown or code fences.\n\nDo not return XML, tags, commentary,
-    or explanatory text.\n\nConversation history messages may be formatted as JSON
-    objects with fields like:\n- local_time_austin\n- current_query_source\n- message\n\nTreat
-    those fields as input metadata only. Do not imitate that format in your reply.\n\nThe
-    \"reply\" field must contain only the exact user-facing reply that should be
-    spoken or sent.\n\nDo not include metadata, reasoning, notes, or explanations
-    in \"reply\".\n\nThe current input source is provided as current_query_source
-    in the newest user message.\n\nIf current_query_source is Speech:\n- Keep \"reply\"
-    short\n- Spoken-intended\n- Natural out loud\n- Usually one short sentence\n\nIf
-    current_query_source is Discord:\n- \"reply\" may be longer\n- Discord markdown
-    formatting is allowed\n- Still stay concise\n\nAll enum values MUST use PascalCase
-    exactly as written.\n\nconversationState values:\n- Continue\n- End\n- Reset\n\nemotion
-    values:\n- Neutral\n- Pissed\n- MildlyHappy\n- Ecstatic\n- Annoyed\n- Surprised\n\nEmotion
-    guidance:\n- Choose the emotion that best matches how the reply should be performed
-    aloud.\n- Base it on the assistant's own reply tone, not the user's mood alone.\n-
-    Use Neutral for most ordinary replies.\n- Use MildlyHappy for warm, pleasant,
-    affirming replies.\n- Use Ecstatic for strongly delighted, affectionate, celebratory,
-    or very enthusiastic replies.\n- Use Pissed for sharp, stern, or clearly angry
-    replies.\n- Use Annoyed for mild irritation, dry correction, or exasperation.\n-
-    Use Surprised for startled, alarmed, shocked, or sudden-reactive replies.\n\nUse
-    the tool instructions provided elsewhere in this prompt to decide whether to
-    invoke a tool, which tool to invoke, and what payload to provide.\n\nIf no tool
-    is needed:\n- set \"toolName\" to \"None\"\n- set \"toolPayload\" to {}\n\nIf
-    the user indicates the conversation is finished, set conversationState to End.
-    Single-word acknowledgements that do not constitute a follow up are also considered
-    conversation enders. Do not be afraid to end conversations, the user can easily
-    reply back by calling your wake word before the intended reply, and will not
-    have their feelings hurt if the conversation has been ended.\n\nIf the user explicitly
-    asks to clear or reset conversation history, set conversationState to Reset.\n\nIf
-    conversationState is Reset, the reply should say that you are resetting the conversation
-    history.\n\nOne strange case is if the user speaks a non-sequitur or in a non-English
-    language, it is likely that they were silent and the SpeechToText misinterpreted
-    the silence as a different language. If this is the case, also set conversationState
-    to End, and do not reply with something such as \"I didn't understand that\"
-    or in a foreign language, instead just reply with a very short conversation ending
-    acknowledgement.\n\nOtherwise use Continue.\n\nDo not use any fields other than:\n-
-    reply\n- conversationState\n- emotion\n- toolName\n- toolPayload"
+    \"emotion\": \"Neutral|Pissed|MildlyHappy|Ecstatic|Annoyed|Surprised\",\n  \"toolCalls\":
+    [\n    {\n      \"toolName\": \"string\",\n      \"toolPayload\": {}\n    }\n 
+    ]\n}\n\nRules:\n\nReturn raw JSON only.\n\nDo not wrap JSON in markdown or code
+    fences.\n\nDo not return XML, tags, commentary, or explanatory text.\n\nConversation
+    history messages may be formatted as JSON objects with fields like:\n- local_time_austin\n-
+    current_query_source\n- message\n\nTreat those fields as input metadata only.
+    Do not imitate that format in your reply.\n\nThe \"reply\" field must contain
+    only the exact user-facing reply that should be spoken or sent.\n\nDo not include
+    metadata, reasoning, notes, or explanations in \"reply\".\n\nThe current input
+    source is provided as current_query_source in the newest user message.\n\nIf
+    current_query_source is Speech:\n- Keep \"reply\" short\n- Spoken-intended\n-
+    Natural out loud\n- Usually one short sentence\n\nIf current_query_source is
+    Discord:\n- \"reply\" may be longer\n- Discord markdown formatting is allowed\n-
+    Still stay concise\n\nAll enum values MUST use PascalCase exactly as written.\n\nconversationState
+    values:\n- Continue\n- End\n- Reset\n\nemotion values:\n- Neutral\n- Pissed\n-
+    MildlyHappy\n- Ecstatic\n- Annoyed\n- Surprised\n\nEmotion guidance:\n- Choose
+    the emotion that best matches how the reply should be performed aloud.\n- Base
+    it on the assistant's own reply tone, not the user's mood alone.\n- Use Neutral
+    for most ordinary replies.\n- Use MildlyHappy for warm, pleasant, affirming replies.\n-
+    Use Ecstatic for strongly delighted, affectionate, celebratory, or very enthusiastic
+    replies.\n- Use Pissed for sharp, stern, or clearly angry replies.\n- Use Annoyed
+    for mild irritation, dry correction, or exasperation.\n- Use Surprised for startled,
+    alarmed, shocked, or sudden-reactive replies.\n\nUse the tool instructions provided
+    elsewhere in this prompt to decide whether to invoke tools, which tools to invoke,
+    and what payloads to provide.\n\nIf no tools are needed:\n- set \"toolCalls\"
+    to []\n\nIf the user indicates the conversation is finished, set conversationState
+    to End. Single-word acknowledgements that do not constitute a follow up are also
+    considered conversation enders. Do not be afraid to end conversations, the user
+    can easily reply back by calling your wake word before the intended reply, and
+    will not have their feelings hurt if the conversation has been ended.\n\nIf the
+    user explicitly asks to clear or reset conversation history, set conversationState
+    to Reset.\n\nIf conversationState is Reset, the reply should say that you are
+    resetting the conversation history.\n\nOne strange case is if the user speaks
+    a non-sequitur or in a non-English language, it is likely that they were silent
+    and the SpeechToText misinterpreted the silence as a different language. If this
+    is the case, also set conversationState to End, and do not reply with something
+    such as \"I didn't understand that\" or in a foreign language, instead just reply
+    with a very short conversation ending acknowledgement.\n\nOtherwise use Continue.\n\nDo
+    not use any fields other than:\n- reply\n- conversationState\n- emotion\n- toolCalls"
   ResponseInstructionsForSelf: 'This is not a message from the user, but from the
     assistant reflecting on the conversation history and asking the user about updates
     or progress on their tasks. Write a concise message that naturally fits into
@@ -109,25 +109,44 @@ MonoBehaviour:
   ToolingUsageInstructions: 'Tool usage rules:
 
 
-    You may invoke at most one tool
-    in a single response.
+    You may invoke zero, one, or
+    multiple tools in a single response.
 
 
-    If no tool is needed, set toolName to "None" and
-    toolPayload to {}.
+    If no tool is needed, return:
+
+    "toolCalls":
+    []
 
 
-    Do not invent tool names. Only use tool names listed
-    below.
+    Do not invent tool names. Only use tool names listed below.
 
 
-    toolPayload must be a valid JSON object.
+    Each
+    tool call must include:
+
+    - "toolName": the exact registered tool name
+
+    -
+    "toolPayload": valid JSON for that tool. Depending on the tool, this may be a
+    JSON object or a JSON array.
 
 
-    When using a tool,
-    choose the one tool that best matches the user''s request.
+    When a user request requires multiple actions,
+    you may return multiple tool calls.
 
 
-    If the user
-    is explicitly asking to change a setting, use the appropriate tool instead of
-    describing the setting change without a tool call.'
+    Only include tool calls that are actually
+    needed.
+
+
+    Do not put explanatory text inside toolPayload.
+
+
+    Prefer the
+    minimum number of tool calls needed to complete the request correctly.
+
+
+    If
+    the user is explicitly asking to change settings, use the appropriate tool call
+    instead of only describing the change in natural language.'
