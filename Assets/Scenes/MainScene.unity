@@ -5499,7 +5499,7 @@ MonoBehaviour:
     }'
   _updateToolIndicatorPrefab: {fileID: 1788539787}
   _updateToolIndicatorText: {fileID: 219046819}
-  _updateScriptAbsolutePath: /Users/Ritsuko/UnityProjects/Ritsuko/UpdateService/UpdateRitsuko.sh
+  _updateScriptAbsolutePath: /Users/ritsuko/UnityProjects/Ritsuko/UpdateService/UpdateRitsuko.sh
   _updateCountdownSeconds: 15
 --- !u!1 &1277812846
 GameObject:
