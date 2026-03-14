@@ -66,5 +66,9 @@ namespace Configuration
         
         [TextArea(10, 50)]
         public string ToolingUsageInstructions = "Tool usage rules:\\n\\n- You may invoke at most one tool in a single response.\\n- If no tool is needed, set toolName to \"None\" and toolPayload to {}.\\n- Do not invent tool names. Only use tool names listed below.\\n- toolPayload must be a valid JSON object.\\n- When using a tool, choose the one tool that best matches the user's request.\\n- If the user is explicitly asking to change a setting, use the appropriate tool instead of describing the setting change without a tool call.";
+
+        [TextArea(10, 50)]
+        public string TaskOrganizerStateInstructions =
+            "We will also be passing you a json object representing the to-do list. You will not be manipulating the to-do list, this will be done through tooling calls. The to-do list is provided for your context and reasoning.";
     }
 }

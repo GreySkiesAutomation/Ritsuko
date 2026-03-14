@@ -70,12 +70,15 @@ namespace Runtime
 
         private PromptBuilder _promptBuilder;
         public PromptBuilder PromptBuilder => _promptBuilder;
+        
+        
 
         private float _escapeKeyHeldTimeSeconds;
         private bool _escapeKeyIsHeld;
         private bool _stateIsDirty;
 
         public GlobalState State { get; private set; } = new GlobalState();
+        public TaskState TaskState;
 
         private void Start()
         {

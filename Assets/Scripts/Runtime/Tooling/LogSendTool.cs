@@ -9,7 +9,7 @@ namespace Runtime.Tooling
 {
     public class LogSendTool : BaseTool
     {
-        public override void Initialize()
+        protected override void InitializeInternal()
         {
         }
 

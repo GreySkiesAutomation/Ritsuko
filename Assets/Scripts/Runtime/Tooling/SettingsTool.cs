@@ -11,7 +11,7 @@ namespace Runtime.Tooling
 {
     public class SettingsTool : BaseTool
     {
-        public override void Initialize()
+        protected override void InitializeInternal()
         {
         }
 

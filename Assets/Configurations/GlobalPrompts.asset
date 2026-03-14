@@ -147,3 +147,25 @@ MonoBehaviour:
     If
     the user is explicitly asking to change settings, use the appropriate tool call
     instead of only describing the change in natural language.'
+  TaskOrganizerStateInstructions: "The assistant maintains an internal to-do list
+    used to track tasks for the user.\n\nA JSON object representing the current to-do
+    list state will be included in the prompt under the \"Task Organizer State\"
+    section. This JSON reflects the current system state and should be used only
+    for reasoning and context.\n\nImportant rules:\n\n- The JSON state is read-only
+    context.\n- You must NEVER attempt to modify the JSON directly in your response.\n-
+    All changes to tasks must be performed using the TaskOrganizerTool.\n- The system
+    automatically assigns taskId values when tasks are created.\n- Tasks are short-lived
+    working memory for the assistant and user, not a permanent database.\n\nEach
+    task contains the following fields:\n\ntaskId  \nAn integer identifier for the
+    task.\n\nname  \nA short description of the task.\n\ncategory  \nThe domain of
+    the task. Possible values:\nWORK\nPERSONAL\nHOBBY\nDOMESTIC\nRITSUKO\n\npriority 
+    \nThe importance of the task. Possible values:\nLOW\nMEDIUM\nHIGH\n\nurgency 
+    \nHow time-sensitive the task is. Possible values:\nLOW\nMEDIUM\nHIGH\n\nstatus 
+    \nThe current progress state. Possible values:\nPENDING\nINPROGRESS\nBLOCKED\nDONE\nCANCELLED\n\ndatetimeAdded 
+    \nThe timestamp when the task was created.\n\nnotes  \nOptional short descriptor
+    or clarification about the task.\n\nWhen the user asks about tasks, you may read
+    the JSON state to understand the current list.\n\nWhen the user asks to modify
+    the to-do list (add, remove, rename, update status, etc.), you must use the TaskOrganizerTool
+    instead of describing the change in natural language.\n\nIf multiple task changes
+    are required, you may include multiple tool calls in a single response.\n\nPrefer
+    the minimum number of tool calls needed to complete the request."

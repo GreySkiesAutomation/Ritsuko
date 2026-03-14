@@ -37,6 +37,8 @@ namespace Runtime.Reasoning
         [Header("Optional (recommended by OpenRouter)")]
         [SerializeField] private string _httpReferer = "http://localhost";
         [SerializeField] private string _xTitle = "Unity OpenRouter Client";
+        [SerializeField] private bool _logFullInputPayload = true;
+        [SerializeField] private bool _logFullResponsePayload = true;
 
         private static HttpClient s_httpClient;
         private CancellationTokenSource _activeRequestCancellationTokenSource;
@@ -117,7 +119,12 @@ namespace Runtime.Reasoning
                 messages = copiedMessages
             };
 
-            var json = JsonConvert.SerializeObject(requestBody);
+            var json = JsonConvert.SerializeObject(requestBody, Formatting.Indented);
+
+            if (_logFullInputPayload)
+            {
+                Debug.Log("[OpenRouterChatClient] Full input payload:\n" + json);
+            }
 
             var httpRequest = new HttpRequestMessage(HttpMethod.Post, _baseUrl);
             httpRequest.Headers.Authorization = new AuthenticationHeaderValue("Bearer", Secrets.OPEN_ROUTER_API_KEY);
@@ -141,6 +148,11 @@ namespace Runtime.Reasoning
             {
                 httpResponse = await s_httpClient.SendAsync(httpRequest, _activeRequestCancellationTokenSource.Token);
                 responseText = await httpResponse.Content.ReadAsStringAsync();
+
+                if (_logFullResponsePayload)
+                {
+                    Debug.Log("[OpenRouterChatClient] Full response payload:\n" + responseText);
+                }
             }
             catch (TaskCanceledException)
             {
@@ -185,7 +197,8 @@ namespace Runtime.Reasoning
             if (parsed.usage != null)
             {
                 Debug.Log(
-                    "[OpenRouterChatClient] Prompt tokens: " + parsed.usage.prompt_tokens +
+                    "[OpenRouterChatClient] Model: " + configuration.Model +
+                    ", Prompt tokens: " + parsed.usage.prompt_tokens +
                     ", Completion tokens: " + parsed.usage.completion_tokens +
                     ", Total tokens: " + parsed.usage.total_tokens);
             }

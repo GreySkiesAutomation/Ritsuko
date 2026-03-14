@@ -11,13 +11,23 @@ namespace Runtime.Tooling
 {
     public class ToDoListDisplayTool : BaseTool
     {
-        private const float DEFAULT_SHOW_DURATION_MINUTES = 5f;
-
         [SerializeField]
         private GameObject _toDoListDisplayPrefab;
 
         [SerializeField]
         private TMP_Text _toDoListText;
+
+        [SerializeField]
+        private Color _importantTextColor = Color.red;
+
+        [SerializeField]
+        private Color _normalTextColor = Color.black;
+
+        [SerializeField]
+        private string _urgentPrefix = "[URGENT] ";
+
+        [SerializeField]
+        private string _highPriorityPrefix = "[HIGH PRIORITY] ";
 
         private DateTime _hideAtUtc = DateTime.MinValue;
 
@@ -26,17 +36,9 @@ namespace Runtime.Tooling
         {
             public string option;
             public float? durationMinutes;
-            public List<ToDoListDisplayItemPayload> items;
         }
 
-        [Serializable]
-        private class ToDoListDisplayItemPayload
-        {
-            public string status;
-            public string item;
-        }
-
-        public override void Initialize()
+        protected override void InitializeInternal()
         {
             _hideAtUtc = DateTime.UtcNow.AddMinutes(-1f);
 
@@ -126,7 +128,7 @@ namespace Runtime.Tooling
                 return false;
             }
 
-            var formattedToDoListText = BuildFormattedToDoListText(payload.items);
+            var formattedToDoListText = BuildFormattedToDoListTextFromTaskState();
             _toDoListText.text = formattedToDoListText;
 
             ShowToDoListDisplay();
@@ -161,74 +163,112 @@ namespace Runtime.Tooling
             _hideAtUtc = DateTime.UtcNow.AddMinutes(-1f);
         }
 
-        private string BuildFormattedToDoListText(List<ToDoListDisplayItemPayload> items)
+        private string BuildFormattedToDoListTextFromTaskState()
         {
-            var inProgressItems = new List<string>();
-            var pendingItems = new List<string>();
-            var blockedItems = new List<string>();
+            var inProgressImportantItems = new List<string>();
+            var inProgressNormalItems = new List<string>();
+
+            var pendingImportantItems = new List<string>();
+            var pendingNormalItems = new List<string>();
+
+            var blockedImportantItems = new List<string>();
+            var blockedNormalItems = new List<string>();
+
             var finishedItems = new List<string>();
 
-            if (items != null)
+            var taskState = GlobalManager.I != null ? GlobalManager.I.TaskState : null;
+            var tasks = taskState != null ? taskState.Tasks : null;
+
+            if (tasks != null)
             {
-                for (var i = 0; i < items.Count; i++)
+                for (var taskIndex = 0; taskIndex < tasks.Count; taskIndex++)
                 {
-                    var currentItem = items[i];
+                    var currentTask = tasks[taskIndex];
 
-                    if (currentItem == null)
+                    if (currentTask == null)
                     {
                         continue;
                     }
 
-                    if (string.IsNullOrWhiteSpace(currentItem.item))
+                    if (string.IsNullOrWhiteSpace(currentTask.name))
                     {
                         continue;
                     }
 
-                    var normalizedStatus = currentItem.status;
-
-                    if (string.IsNullOrWhiteSpace(normalizedStatus))
+                    if (ShouldHideTaskFromDisplay(currentTask))
                     {
-                        normalizedStatus = "pending";
-                    }
-
-                    normalizedStatus = normalizedStatus.Trim();
-
-                    var trimmedItemText = currentItem.item.Trim();
-
-                    if (string.Equals(normalizedStatus, "in progress", StringComparison.OrdinalIgnoreCase))
-                    {
-                        inProgressItems.Add(trimmedItemText);
                         continue;
                     }
 
-                    if (string.Equals(normalizedStatus, "pending", StringComparison.OrdinalIgnoreCase))
+                    var formattedTaskText = BuildFormattedTaskText(currentTask);
+                    var isImportantTask = IsImportantTaskForDisplay(currentTask);
+                    var normalizedStatus = currentTask.status.ToString();
+
+                    if (string.Equals(normalizedStatus, "INPROGRESS", StringComparison.OrdinalIgnoreCase))
                     {
-                        pendingItems.Add(trimmedItemText);
+                        if (isImportantTask)
+                        {
+                            inProgressImportantItems.Add(formattedTaskText);
+                        }
+                        else
+                        {
+                            inProgressNormalItems.Add(formattedTaskText);
+                        }
+
                         continue;
                     }
 
-                    if (string.Equals(normalizedStatus, "blocked", StringComparison.OrdinalIgnoreCase))
+                    if (string.Equals(normalizedStatus, "PENDING", StringComparison.OrdinalIgnoreCase))
                     {
-                        blockedItems.Add(trimmedItemText);
+                        if (isImportantTask)
+                        {
+                            pendingImportantItems.Add(formattedTaskText);
+                        }
+                        else
+                        {
+                            pendingNormalItems.Add(formattedTaskText);
+                        }
+
                         continue;
                     }
 
-                    if (string.Equals(normalizedStatus, "finished", StringComparison.OrdinalIgnoreCase))
+                    if (string.Equals(normalizedStatus, "BLOCKED", StringComparison.OrdinalIgnoreCase))
                     {
-                        finishedItems.Add(trimmedItemText);
+                        if (isImportantTask)
+                        {
+                            blockedImportantItems.Add(formattedTaskText);
+                        }
+                        else
+                        {
+                            blockedNormalItems.Add(formattedTaskText);
+                        }
+
                         continue;
                     }
 
-                    pendingItems.Add(trimmedItemText);
+                    if (string.Equals(normalizedStatus, "DONE", StringComparison.OrdinalIgnoreCase))
+                    {
+                        finishedItems.Add(formattedTaskText);
+                        continue;
+                    }
+
+                    if (isImportantTask)
+                    {
+                        pendingImportantItems.Add(formattedTaskText);
+                    }
+                    else
+                    {
+                        pendingNormalItems.Add(formattedTaskText);
+                    }
                 }
             }
 
             var stringBuilder = new StringBuilder(2048);
 
-            AppendSectionIfAny(stringBuilder, "IN PROGRESS", inProgressItems);
-            AppendSectionIfAny(stringBuilder, "PENDING", pendingItems);
-            AppendSectionIfAny(stringBuilder, "BLOCKED", blockedItems);
-            AppendSectionIfAny(stringBuilder, "FINISHED", finishedItems);
+            AppendSectionIfAny(stringBuilder, "IN PROGRESS", inProgressImportantItems, inProgressNormalItems);
+            AppendSectionIfAny(stringBuilder, "PENDING", pendingImportantItems, pendingNormalItems);
+            AppendSectionIfAny(stringBuilder, "BLOCKED", blockedImportantItems, blockedNormalItems);
+            AppendSectionIfAny(stringBuilder, "FINISHED", null, finishedItems);
 
             if (stringBuilder.Length == 0)
             {
@@ -238,9 +278,111 @@ namespace Runtime.Tooling
             return stringBuilder.ToString().TrimEnd();
         }
 
-        private void AppendSectionIfAny(StringBuilder stringBuilder, string headerText, List<string> items)
+        private bool ShouldHideTaskFromDisplay(TaskData taskData)
         {
-            if (items == null || items.Count == 0)
+            var normalizedStatus = taskData.status.ToString();
+
+            if (string.Equals(normalizedStatus, "CANCELLED", StringComparison.OrdinalIgnoreCase))
+            {
+                return true;
+            }
+
+            if (string.Equals(normalizedStatus, "ARCHIVED", StringComparison.OrdinalIgnoreCase))
+            {
+                return true;
+            }
+
+            return false;
+        }
+
+        private bool IsFinishedLikeTask(TaskData taskData)
+        {
+            var normalizedStatus = taskData.status.ToString();
+
+            if (string.Equals(normalizedStatus, "DONE", StringComparison.OrdinalIgnoreCase))
+            {
+                return true;
+            }
+
+            if (string.Equals(normalizedStatus, "CANCELLED", StringComparison.OrdinalIgnoreCase))
+            {
+                return true;
+            }
+
+            if (string.Equals(normalizedStatus, "ARCHIVED", StringComparison.OrdinalIgnoreCase))
+            {
+                return true;
+            }
+
+            return false;
+        }
+
+        private bool IsImportantTaskForDisplay(TaskData taskData)
+        {
+            if (IsFinishedLikeTask(taskData))
+            {
+                return false;
+            }
+
+            return taskData.priority == TaskPriority.HIGH ||
+                   taskData.urgency == TaskUrgency.HIGH;
+        }
+
+        private string BuildFormattedTaskText(TaskData taskData)
+        {
+            var stringBuilder = new StringBuilder(256);
+            var isImportantTask = IsImportantTaskForDisplay(taskData);
+
+            if (isImportantTask)
+            {
+                if (taskData.urgency == TaskUrgency.HIGH && !string.IsNullOrWhiteSpace(_urgentPrefix))
+                {
+                    stringBuilder.Append(_urgentPrefix);
+                }
+
+                if (taskData.priority == TaskPriority.HIGH && !string.IsNullOrWhiteSpace(_highPriorityPrefix))
+                {
+                    stringBuilder.Append(_highPriorityPrefix);
+                }
+            }
+
+            stringBuilder.Append(taskData.name.Trim());
+
+            var escapedText = EscapeRichText(stringBuilder.ToString());
+            var colorHex = isImportantTask
+                ? ColorUtility.ToHtmlStringRGB(_importantTextColor)
+                : ColorUtility.ToHtmlStringRGB(_normalTextColor);
+
+            if (isImportantTask)
+            {
+                return "<b><color=#" + colorHex + ">" + escapedText + "</color></b>";
+            }
+
+            return "<color=#" + colorHex + ">" + escapedText + "</color>";
+        }
+
+        private string EscapeRichText(string text)
+        {
+            if (string.IsNullOrEmpty(text))
+            {
+                return string.Empty;
+            }
+
+            return text
+                .Replace("<", "&lt;")
+                .Replace(">", "&gt;");
+        }
+
+        private void AppendSectionIfAny(
+            StringBuilder stringBuilder,
+            string headerText,
+            List<string> importantItems,
+            List<string> normalItems)
+        {
+            var hasImportantItems = importantItems != null && importantItems.Count > 0;
+            var hasNormalItems = normalItems != null && normalItems.Count > 0;
+
+            if (!hasImportantItems && !hasNormalItems)
             {
                 return;
             }
@@ -253,10 +395,22 @@ namespace Runtime.Tooling
 
             stringBuilder.AppendLine(headerText);
 
-            for (var i = 0; i < items.Count; i++)
+            if (hasImportantItems)
             {
-                stringBuilder.Append("• ");
-                stringBuilder.AppendLine(items[i]);
+                for (var itemIndex = 0; itemIndex < importantItems.Count; itemIndex++)
+                {
+                    stringBuilder.Append("• ");
+                    stringBuilder.AppendLine(importantItems[itemIndex]);
+                }
+            }
+
+            if (hasNormalItems)
+            {
+                for (var itemIndex = 0; itemIndex < normalItems.Count; itemIndex++)
+                {
+                    stringBuilder.Append("• ");
+                    stringBuilder.AppendLine(normalItems[itemIndex]);
+                }
             }
         }
 

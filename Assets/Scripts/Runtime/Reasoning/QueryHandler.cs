@@ -129,7 +129,7 @@ namespace Runtime.Reasoning
             MarkDirty();
         }
 
-        public async void HandleNewMessage(string messageContent, QuerySource source)
+        public async void HandleNewMessage(string messageContent, QuerySource source, bool attachTaskState = true)
         {
             if (string.IsNullOrWhiteSpace(messageContent))
             {
@@ -149,7 +149,7 @@ namespace Runtime.Reasoning
             try
             {
                 var userTimestamp = TimeUtility.GetCurrentLocalAustinTimeDisplay();
-                var outboundMessageHistory = BuildOutboundMessageHistory(messageContent, userTimestamp, source);
+                var outboundMessageHistory = BuildOutboundMessageHistory(messageContent, userTimestamp, source, attachTaskState);
 
                 string rawResponse = null;
 
@@ -374,21 +374,29 @@ namespace Runtime.Reasoning
         private List<OpenRouterChatClient.ChatMessage> BuildOutboundMessageHistory(
             string newestUserMessageContent,
             string newestUserTimestamp,
-            QuerySource source)
+            QuerySource source,
+            bool attachTaskState)
         {
             var outboundMessageHistory = new List<OpenRouterChatClient.ChatMessage>();
 
             _currentLocalAustinTimeDisplay = TimeUtility.GetCurrentLocalAustinTimeDisplay();
 
             var systemPrompt = GlobalManager.I.PromptBuilder.BuildSystemPrompt(source, true);
-
             var systemPromptWithTimeContext =
                 systemPrompt + "\n\n" +
                 "local time: " + _currentLocalAustinTimeDisplay + "\n";
 
+            
+            if (attachTaskState)
+            {
+                systemPromptWithTimeContext += "\n" + BuildTaskStatePromptBlock();
+            }
+            
+
             Log("[QueryHandler] Full system prompt for this message:\n" + systemPromptWithTimeContext);
             Log("[QueryHandler] Conversation history count included in outbound prompt: " + _conversationHistory.Count);
             Log("[QueryHandler] Current query source: " + source);
+            Log("[QueryHandler] Attach task state: " + attachTaskState);
 
             if (_includeSystemPrompt && !string.IsNullOrWhiteSpace(systemPromptWithTimeContext))
             {
@@ -421,6 +429,33 @@ namespace Runtime.Reasoning
                     FormatMessageForModel(newestUserMessageContent, newestUserTimestamp, source)));
 
             return outboundMessageHistory;
+        }
+
+        private string BuildTaskStatePromptBlock()
+        {
+            var serializedTaskStateJson = "{ \"tasks\": [] }";
+
+            if (GlobalManager.I != null && GlobalManager.I.TaskState != null)
+            {
+                try
+                {
+                    var serializedJson = GlobalManager.I.TaskState.SerializeToJsonString();
+
+                    if (!string.IsNullOrWhiteSpace(serializedJson))
+                    {
+                        serializedTaskStateJson = serializedJson;
+                    }
+                }
+                catch (Exception exception)
+                {
+                    serializedTaskStateJson = "{ \"tasks\": [], \"error\": \"Failed to serialize task state: " + exception.Message.Replace("\"", "'") + "\" }";
+                }
+            }
+
+            return
+                "=== Task Organizer State ===\n" +
+                "Current To-Do List State Json:\n" +
+                serializedTaskStateJson + "\n";
         }
 
         private string FormatMessageForModel(string content, string localTimestampDisplay, QuerySource? source)

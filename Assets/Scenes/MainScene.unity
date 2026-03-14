@@ -785,7 +785,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 870933be0bfa404da625bb5605964313, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  CurrentLogLevel: 2
+  CurrentLogLevel: 3
   m_statusReadOnly: 
   _toolName: LogSendTool
   _toolPriority: 0
@@ -844,7 +844,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 23e8919d91354f418ab461978e7f94b3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  CurrentLogLevel: 2
+  CurrentLogLevel: 3
   m_statusReadOnly: 
   _toolName: SettingsTool
   _toolPriority: 0
@@ -3330,6 +3330,208 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 731437732}
   m_CullTransparentMesh: 1
+--- !u!1 &751388226
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 751388228}
+  - component: {fileID: 751388227}
+  m_Layer: 0
+  m_Name: TaskOrganizerTool
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &751388227
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 751388226}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6d4936fececb4cc9b972d6e79c36de8f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  CurrentLogLevel: 3
+  m_statusReadOnly: 
+  _toolName: TaskOrganizer
+  _toolPriority: 0
+  _descriptionForPrompt: 'Use this tool to manage the assistant''s internal to-do
+    list.
+
+
+    The to-do list represents short-term tasks the user wants to track.
+    Tasks are small, practical items such as work tasks, personal reminders, domestic
+    chores, hobby goals, or tasks related to improving the assistant itself.
+
+
+    Use
+    this tool when the user:
+
+    - asks to add a task
+
+    - asks to remove or delete
+    a task
+
+    - asks to rename or modify a task
+
+    - asks to change a task''s
+    status
+
+    - asks to change category, priority, or urgency
+
+    - asks to update
+    notes for a task
+
+
+    Tasks are identified by an integer taskId.
+
+
+    Important
+    rules:
+
+    - Do NOT invent tasks unless the user explicitly asks to add one.
+
+    -
+    When creating a task, the taskId is assigned automatically by the system.
+
+    -
+    Task names should be short and clear (maximum 128 characters).
+
+    - Notes should
+    be short descriptors, not long logs (maximum ~256 characters).
+
+    - The tool
+    accepts either a single action object OR an array of action objects.
+
+    - If
+    no category, priority, or urgency is defined, set to "UNDEFINED"
+
+    - if no
+    status is defined, assume "PENDING"
+
+
+    Available actions:
+
+    createTask
+
+    deleteTask
+
+    rename
+
+    setCategory
+
+    setPriority
+
+    setUrgency
+
+    setStatus
+
+    setNotes
+
+
+    Enum
+    values:
+
+
+    category:
+
+    UNDEFINED
+
+    WORK
+
+    PERSONAL
+
+    HOBBY
+
+    DOMESTIC
+
+    RITSUKO
+
+
+    priority:
+
+    UNDEFINED
+
+    LOW
+
+    MEDIUM
+
+    HIGH
+
+
+    urgency:
+
+    UNDEFINED
+
+    LOW
+
+    MEDIUM
+
+    HIGH
+
+
+    status:
+
+    PENDING
+
+    INPROGRESS
+
+    BLOCKED
+
+    DONE
+
+    CANCELLED
+
+    ARCHIVED
+
+
+    Prefer
+    batching multiple actions into a single payload array if several changes are
+    needed at once.
+
+
+    Finally, always call the ToDoListDisplayTool whenever we
+    make any changes to the to-do list, default display time of five minutes. Because
+    the tool priority is defined, this will always deterministically run after to-do
+    list changes have been made.'
+  _jsonPayloadExampleForPrompt: "A valid single action example:\n\n{\n  \"action\":
+    \"createTask\",\n  \"name\": \"Investigate webcam timeout issue\",\n  \"category\":
+    \"WORK\",\n  \"priority\": \"HIGH\",\n  \"urgency\": \"MEDIUM\",\n  \"status\":
+    \"INPROGRESS\",\n  \"notes\": \"Testing overnight with C910 camera\"\n}\n\n\n{\n 
+    \"action\": \"createTask\",\n  \"name\": \"Task A\",\n  \"category\": \"UNDEFINED\",\n 
+    \"priority\": \"UNDEFINED\",\n  \"urgency\": \"UNDEFINED\",\n  \"status\": \"PENDING\",\n 
+    \"notes\": \"Seems to be a vaguely defined task\"\n}\n\nA valid task status update:\n\n{\n 
+    \"action\": \"setStatus\",\n  \"taskId\": 12,\n  \"status\": \"INPROGRESS\"\n}\n\n\nA
+    valid rename example:\n\n{\n  \"action\": \"rename\",\n  \"taskId\": 12,\n  \"name\":
+    \"Investigate webcam USB timeout\"\n}\n\n\nA valid multi-action example:\n\n[\n 
+    {\n    \"action\": \"createTask\",\n    \"name\": \"Fix Ritsuko task prompt formatting\",\n   
+    \"category\": \"RITSUKO\",\n    \"priority\": \"HIGH\",\n    \"urgency\": \"MEDIUM\"\n 
+    },\n  {\n    \"action\": \"setStatus\",\n    \"taskId\": 7,\n    \"status\":
+    \"DONE\"\n  },\n  {\n    \"action\": \"setNotes\",\n    \"taskId\": 4,\n    \"notes\":
+    \"Blocked waiting for hardware test results\"\n  }\n]"
+--- !u!4 &751388228
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 751388226}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1013519119}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &760961333
 GameObject:
   m_ObjectHideFlags: 0
@@ -4579,6 +4781,7 @@ Transform:
   - {fileID: 136202905}
   - {fileID: 152679331}
   - {fileID: 1238848761}
+  - {fileID: 751388228}
   m_Father: {fileID: 1425339352}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &1013519120
@@ -4600,6 +4803,7 @@ MonoBehaviour:
   - {fileID: 136202906}
   - {fileID: 152679332}
   - {fileID: 1238848762}
+  - {fileID: 751388227}
 --- !u!1 &1013809935
 GameObject:
   m_ObjectHideFlags: 0
@@ -4832,35 +5036,73 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d8ba876a9034460dbaef1834d4970947, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  CurrentLogLevel: 2
+  CurrentLogLevel: 3
   m_statusReadOnly: 
   _toolName: ToDoListDisplayTool
   _toolPriority: 1000
-  _descriptionForPrompt: "Use this tool when the user asks to see, show, or hide
-    the full to-do list. This displays the task list in a large UI view instead of
-    returning it in the assistant reply.\n\nWhen showing the list, return the tasks
-    in the items array with a status and item text.\n\nAllowed status values:\n-
-    in progress\n- pending\n- blocked\n- finished\n\nIf the user asks to show the
-    to-do list for a specific time, convert that request to durationMinutes as a
-    float in minutes.\n\nExamples:\n- 20 minutes \u2192 20\n- 30 seconds \u2192 0.5\n-
-    1 hour \u2192 60\n\nRules:\n- If the user says \"show the to-do list\", default
-    to durationMinutes = 5.\n- If the user asks to keep the list visible indefinitely,
-    omit durationMinutes.\n- If the user asks to hide or close the list, set option
-    to \"hide\".\n- If the user asks to show it, set option to \"show\"."
-  _jsonPayloadExampleForPrompt: "A valid example payload:\n{\n  \"option\": \"show\",\n 
-    \"durationMinutes\": 5,\n  \"items\": [\n    {\n      \"status\": \"in progress\",\n     
-    \"item\": \"Implement OpenClawTool\"\n    },\n    {\n      \"status\": \"in progress\",\n     
-    \"item\": \"Tune proactive loop behavior\"\n    },\n    {\n      \"status\":
-    \"pending\",\n      \"item\": \"Hook up Trello task sync\"\n    },\n    {\n     
-    \"status\": \"pending\",\n      \"item\": \"Add Discord log export tool\"\n   
-    },\n    {\n      \"status\": \"blocked\",\n      \"item\": \"Waiting for OpenClaw
-    API key\"\n    },\n    {\n      \"status\": \"finished\",\n      \"item\": \"Implement
-    SettingsTool\"\n    }\n  ]\n}\n\nanother valid example payload:\n{\n  \"option\":
-    \"show\",\n  \"durationMinutes\": 0.5,\n  \"items\": [\n    {\n      \"status\":
-    \"pending\",\n      \"item\": \"Check stream setup\"\n    }\n  ]\n}\n\nanother
-    valid example payload:\n{\n  \"option\": \"hide\",\n  \"items\": []\n}"
+  _descriptionForPrompt: 'Use this tool when the user asks to see, show, open, display,
+    hide, or close the full to-do list UI.
+
+
+    This tool does NOT accept task list
+    contents from the model.
+
+    It reads the current to-do list directly from the
+    application''s internal task state and displays that state in a large UI view.
+
+
+    Use
+    this tool only to control visibility of the to-do list display.
+
+
+    Important
+    rules:
+
+    - Do NOT include task items in the payload.
+
+    - Do NOT attempt
+    to restate or reconstruct the to-do list in the payload.
+
+    - The display always
+    uses the current internal task state.
+
+    - If the user asks to show the to-do
+    list, use option "show".
+
+    - If the user asks to hide or close the to-do list,
+    use option "hide".
+
+    - If the user asks to show the to-do list for a specific
+    time, convert that request into durationMinutes as a float in minutes.
+
+    -
+    If the user asks to keep the list visible indefinitely, omit durationMinutes.
+
+    -
+    If the user simply asks to show the to-do list without specifying a duration,
+    default to durationMinutes = 5.
+
+
+    Examples:
+
+    - 20 minutes -> 20
+
+    -
+    30 seconds -> 0.5
+
+    - 1 hour -> 60'
+  _jsonPayloadExampleForPrompt: "A valid example payload for showing the to-do list
+    for 5 minutes:\n\n{\n  \"option\": \"show\",\n  \"durationMinutes\": 5\n}\n\nA
+    valid example payload for showing the to-do list for 30 seconds:\n\n{\n  \"option\":
+    \"show\",\n  \"durationMinutes\": 0.5\n}\n\nA valid example payload for showing
+    the to-do list indefinitely:\n\n{\n  \"option\": \"show\"\n}\n\nA valid example
+    payload for hiding the to-do list:\n\n{\n  \"option\": \"hide\"\n}"
   _toDoListDisplayPrefab: {fileID: 2003458453}
   _toDoListText: {fileID: 954012135}
+  _importantTextColor: {r: 1, g: 0, b: 0, a: 1}
+  _normalTextColor: {r: 0, g: 0, b: 0, a: 1}
+  _urgentPrefix: '[URGENT] '
+  _highPriorityPrefix: '[IMPORTANT] '
 --- !u!1 &1048650640
 GameObject:
   m_ObjectHideFlags: 0
@@ -5412,7 +5654,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a45f44d85cfa43adb9008cc0ce89fa69, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  CurrentLogLevel: 2
+  CurrentLogLevel: 3
   m_statusReadOnly: 
   _toolName: Update
   _toolPriority: -9999
@@ -5768,6 +6010,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1425339352}
   - component: {fileID: 1425339353}
+  - component: {fileID: 1425339354}
   m_Layer: 0
   m_Name: GlobalManager
   m_TagString: Untagged
@@ -5829,6 +6072,22 @@ MonoBehaviour:
   _proactiveAgencyController: {fileID: 1521810213}
   _toolRouter: {fileID: 1013519120}
   _configuration: {fileID: 11400000, guid: 4fde08eb4c28556468c0f8b66782470a, type: 2}
+--- !u!114 &1425339354
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1425339350}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 913c53e25d444b16bbebb248406c5742, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _autoRefresh: 1
+  _autoRefreshIntervalSeconds: 1
+  _showDoneTasks: 1
+  _showCancelledTasks: 1
 --- !u!1 &1432921430
 GameObject:
   m_ObjectHideFlags: 0
@@ -6425,6 +6684,8 @@ MonoBehaviour:
   m_statusReadOnly: 
   _httpReferer: http://localhost
   _xTitle: Unity OpenRouter Client
+  _logFullInputPayload: 1
+  _logFullResponsePayload: 1
 --- !u!4 &1582701189
 Transform:
   m_ObjectHideFlags: 0

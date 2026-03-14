@@ -28,7 +28,7 @@ namespace Runtime.Tooling
 
         private bool _isUpdateInProgress;
 
-        public override void Initialize()
+        protected override void InitializeInternal()
         {
             if (_updateToolIndicatorPrefab != null)
             {
