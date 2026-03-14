@@ -5,7 +5,7 @@ public static class BuildRitsuko
 {
     public static void BuildMac()
     {
-        var outputPath = Path.GetFullPath(Path.Combine("Build", "Ritsuko.app"));
+        var outputPath = "/Users/ritsuko/RitsukoBuild/Ritsuko.app";
 
         var buildPlayerOptions = new BuildPlayerOptions
         {
