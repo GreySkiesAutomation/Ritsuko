@@ -6313,7 +6313,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: Hello!
+  m_text: Hello! What's on your to-do list today?
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 4db6be6b14228c840ae8e154c2d04270, type: 2}
   m_sharedMaterial: {fileID: 8134038112346518879, guid: 4db6be6b14228c840ae8e154c2d04270, type: 2}
