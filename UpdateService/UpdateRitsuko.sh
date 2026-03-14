@@ -11,11 +11,16 @@ echo "Script launched at: $(date)"
 echo
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
-PROJECT_ROOT="$SCRIPT_DIR/.."
+PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 
 echo "Resolved script directory: $SCRIPT_DIR"
 echo "Resolved project root: $PROJECT_ROOT"
 echo
+
+echo "Preparing update..."
+echo "Git operations will begin in 10 seconds."
+echo
+sleep 10
 
 echo "Changing to project root..."
 cd "$PROJECT_ROOT" || exit 1
