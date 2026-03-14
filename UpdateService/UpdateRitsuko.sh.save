@@ -1,0 +1,30 @@
+#!/bin/bash
+
+
+osascript <<'END_SCRIPT'
+
+tell application "Terminal"
+    activate
+
+    do script "
+    clear
+
+    echo \"=====================================\"
+    echo \" Ritsuko Update Service Test Script \"
+    echo \"=====================================\"
+    echo
+    echo \"Script launched at: \$(date)\"
+    echo
+    echo \"Waiting 10 seconds before continuing...\"
+    echo
+
+    sleep 10
+
+    echo
+    echo \"HELLO UPDATING!\"
+    echo
+    echo \"If you see this, the update script launched successfully.\"
+    echo
+    echo \"Press ENTER to close this window.\"
+
+
