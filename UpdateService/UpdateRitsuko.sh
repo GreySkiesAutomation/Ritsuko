@@ -24,9 +24,9 @@ echo "Resolved Unity path: $UNITY_PATH"
 echo
 
 echo "Preparing update..."
-echo "Git operations will begin in 10 seconds."
+echo "Git operations will begin in 3 seconds."
 echo
-sleep 10
+sleep 3
 
 echo "Changing to project root..."
 cd "$PROJECT_ROOT" || exit 1
@@ -47,8 +47,7 @@ echo
 
 echo "Git sync step complete."
 echo
-echo "Waiting 5 seconds before build..."
-sleep 5
+sleep 1
 echo
 
 echo "Ensuring external build directory exists..."
