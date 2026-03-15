@@ -48,26 +48,60 @@ MonoBehaviour:
   m_statusReadOnly: 
   _toolName: ToDoListDisplayTool
   _toolPriority: 1000
-  _descriptionForPrompt: "Control visibility of the full to-do list UI.\n\nUse when
-    the user asks to show/open/display or hide/close the to-do list.\n\nText vs speech:\nIf
-    the request comes from text (e.g. Discord), ignore unless the user explicitly
-    asks to show it on your screen.\n\nRules:\n- Payload controls visibility only.\n-
-    Never include or reconstruct task items.\n- The UI reads the current internal
-    task state.\n\nOptions:\nshow | hide\n\nDuration:\n- If user specifies time \u2192
-    convert to durationMinutes (float minutes).\n- If unspecified \u2192 default
-    durationMinutes = 5.\n- If user wants it indefinitely \u2192 omit durationMinutes."
-  _jsonPayloadExampleForPrompt: '{ "option":"show","durationMinutes":5 }
+  _descriptionForPrompt: 'Control full to-do list UI visibility.
 
 
-    {
-    "option":"show","durationMinutes":0.5 }
+    Use when the
+    user asks to show/open/display or hide/close the to-do list.
 
 
-    { "option":"show" }
+    Text source
+    rule:
+
+    If the request comes from text, ignore unless the user explicitly
+    asks to show it on your screen.
 
 
-    { "option":"hide"
-    }'
+    Rules:
+
+    - Payload is visibility only.
+
+    -
+    Never include task items.
+
+    - The tool reads current internal task state.
+
+    -
+    option: show|hide
+
+    - If durationMinutes is provided, it must be >0.
+
+    -
+    show + no durationMinutes = show indefinitely.
+
+    - show + no user-specified
+    duration = durationMinutes 5.
+
+    - hide does not need durationMinutes.'
+  _jsonPayloadExampleForPrompt: 'Show default
+
+    {"option":"show","durationMinutes":5}
+
+
+    Show
+    timed
+
+    {"option":"show","durationMinutes":0.5}
+
+
+    Show indefinite
+
+    {"option":"show"}
+
+
+    Hide
+
+    {"option":"hide"}'
   _toDoListDisplayPrefab: {fileID: 0}
   _toDoListText: {fileID: 0}
   _importantTextColor: {r: 0.6431373, g: 0, b: 0.07445346, a: 1}

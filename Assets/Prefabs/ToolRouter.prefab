@@ -361,6 +361,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: UpdateTool
       objectReference: {fileID: 0}
+    - target: {fileID: 6251000780929824445, guid: 599c3991e3f76c94bb4ea8744d587610, type: 3}
+      propertyPath: _toolPriority
+      value: -999
+      objectReference: {fileID: 0}
     - target: {fileID: 6784965136460897997, guid: 599c3991e3f76c94bb4ea8744d587610, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0

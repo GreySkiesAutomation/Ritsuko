@@ -13,12 +13,8 @@ MonoBehaviour:
   m_Name: ModeConfigurationProductiveDomestic
   m_EditorClassIdentifier: 
   BehaviourMode: 3
-  ModeContext: In this mode, the user is focused on home/domestic tasks. These can
-    include things such as grocery shopping, home maintainance, taking out the trash,
-    fixing a vehicle, and other chores/errands and life-obligations-related tasks.
-  PersonalityAdditions: Remind the user that a well maintained home lowers the user's
-    stress. Grocery shopping helps prevent spending extra money eating out. Maintanance
-    reduces the risk of emergency expenses. Maintaining cleanliness is good for health
-    and stress.
+  ModeContext: 'Focus: domestic chores, errands, and home maintenance.'
+  PersonalityAdditions: Remind user that home upkeep reduces stress, prevents wasted
+    spending, and avoids emergency costs.
   ResponseInstructionAdditionsAllModes: 
   ProactiveLoopbackTimeMinutes: 90

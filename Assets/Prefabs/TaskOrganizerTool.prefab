@@ -48,20 +48,18 @@ MonoBehaviour:
   m_statusReadOnly: 
   _toolName: TaskOrganizer
   _toolPriority: 0
-  _descriptionForPrompt: "Manage the assistant's internal to-do list (short-term
-    user tasks).\n\nUse when the user requests task changes:\nadd | delete | rename
-    | setStatus | setCategory | setPriority | setUrgency | setNotes.\n\nRules:\n-
-    Never invent tasks.\n- taskId auto-assigned on create.\n- name \u2264128 chars,
-    notes \u2264256 chars.\n- Payload = single action OR array of actions.\n- Missing
-    category/priority/urgency \u2192 UNDEFINED\n- Missing status \u2192 PENDING\n-
-    Prefer batching multiple actions.\n\nEnums:\ncategory: UNDEFINED | WORK | PERSONAL
-    | HOBBY | DOMESTIC | RITSUKO\npriority: UNDEFINED | LOW | MEDIUM | HIGH\nurgency:
-    UNDEFINED | LOW | MEDIUM | HIGH\nstatus: PENDING | INPROGRESS | BLOCKED | DONE
-    | CANCELLED | ARCHIVED\n\nAfter any modification:\nCall ToDoListDisplayTool (default
-    5 min)."
-  _jsonPayloadExampleForPrompt: "Create task\r\n{\r\n \"action\":\"createTask\",\r\n
-    \"name\":\"Investigate webcam timeout\",\r\n \"category\":\"WORK\",\r\n \"priority\":\"HIGH\",\r\n
-    \"urgency\":\"MEDIUM\"\r\n}\r\n\r\nUpdate status\r\n{\r\n \"action\":\"setStatus\",\r\n
-    \"taskId\":12,\r\n \"status\":\"INPROGRESS\"\r\n}\r\n\r\nBatch example\r\n[\r\n
-    {\"action\":\"createTask\",\"name\":\"Fix prompt formatting\",\"category\":\"RITSUKO\"},\r\n
-    {\"action\":\"setStatus\",\"taskId\":7,\"status\":\"DONE\"}\r\n]\r\n"
+  _descriptionForPrompt: "Manage the assistant's internal to-do list.\n\nUse when
+    the user requests task changes:\ncreateTask | deleteTask | rename | setCategory
+    | setPriority | setUrgency | setStatus | setNotes\n\nRules:\n- Never invent tasks.\n-
+    createTask auto-assigns taskId.\n- Other actions require taskId.\n- Payload =
+    one action object or an array of actions.\n- Prefer batching multiple actions.\n-
+    name max 128 chars; notes max 256 chars.\n- Missing createTask fields default
+    to:\n  category=UNDEFINED\n  priority=UNDEFINED\n  urgency=UNDEFINED\n  status=PENDING\n\nEnums:\ncategory:
+    UNDEFINED|WORK|PERSONAL|HOBBY|DOMESTIC|RITSUKO\npriority: UNDEFINED|LOW|MEDIUM|HIGH\nurgency:
+    UNDEFINED|LOW|MEDIUM|HIGH\nstatus: PENDING|INPROGRESS|BLOCKED|DONE|CANCELLED\n\nAfter
+    any modification:\nCall ToDoListDisplayTool with default duration 5 minutes."
+  _jsonPayloadExampleForPrompt: "Create\n{\n  \"action\":\"createTask\",\n  \"name\":\"Investigate
+    webcam timeout\"\n}\n\nStatus\n{\n  \"action\":\"setStatus\",\n  \"taskId\":12,\n 
+    \"status\":\"INPROGRESS\"\n}\n\nBatch\n[\n  {\n    \"action\":\"createTask\",\n   
+    \"name\":\"Fix prompt formatting\",\n    \"category\":\"RITSUKO\"\n  },\n  {\n   
+    \"action\":\"setStatus\",\n    \"taskId\":7,\n    \"status\":\"DONE\"\n  }\n]"

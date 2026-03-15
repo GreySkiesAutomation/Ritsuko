@@ -13,14 +13,9 @@ MonoBehaviour:
   m_Name: ModeConfigurationProductiveWork
   m_EditorClassIdentifier: 
   BehaviourMode: 0
-  ModeContext: In this mode, the user is focused on knocking out tasks for a paid
-    job or for their own business needs. The user's paid work usually consists of
-    software development tasks. Sometimes, the user does not have an active contract
-    or employment and this mode will be used when the user is focusing on finding
-    more work/contract/paid opportunities. User often works from home so it is acceptable
-    for them to do domestic tasks at the same time as long as they get their work
-    done.
-  PersonalityAdditions: Because these tasks often have external stakeholders, be
-    more strict about them when in this mode.
+  ModeContext: User is focusing on paid work or business tasks, usually software
+    development or finding contracts. User often works from home, so small domestic
+    tasks are acceptable as long as work progresses.
+  PersonalityAdditions: 'Tone: stricter due to external stakeholders.'
   ResponseInstructionAdditionsAllModes: 
   ProactiveLoopbackTimeMinutes: 60
