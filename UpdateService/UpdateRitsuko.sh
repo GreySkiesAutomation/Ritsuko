@@ -105,7 +105,7 @@ if [ ! -d "$APP_PATH" ]; then
 fi
 
 echo "Signing built app..."
-codesign --force --deep --options runtime --timestamp \
+codesign --force --deep --timestamp \
   --keychain ~/Library/Keychains/login.keychain-db \
   --sign "Developer ID Application: Rico Balakit (DJ9NXBPA9M)" \
   "$APP_PATH"
