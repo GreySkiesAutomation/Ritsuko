@@ -183,10 +183,11 @@ MonoBehaviour:
     needed at once.
 
 
-    Finally, always call the ToDoListDisplayTool whenever we
-    make any changes to the to-do list, default display time of five minutes. Because
-    the tool priority is defined, this will always deterministically run after to-do
-    list changes have been made.'
+    Finally, call the ToDoListDisplayTool either always when
+    the user is in "Speech" mode, or if the user requests it from any other mode,
+    whenever we make any changes to the to-do list, default display time of five
+    minutes. Because the tool priority is defined, this will always deterministically
+    run after to-do list changes have been made.'
   _jsonPayloadExampleForPrompt: "A valid single action example:\n\n{\n  \"action\":
     \"createTask\",\n  \"name\": \"Investigate webcam timeout issue\",\n  \"category\":
     \"WORK\",\n  \"priority\": \"HIGH\",\n  \"urgency\": \"MEDIUM\",\n  \"status\":

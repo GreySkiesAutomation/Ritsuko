@@ -52,53 +52,60 @@ MonoBehaviour:
     hide, or close the full to-do list UI.
 
 
-    This tool does NOT accept task list
-    contents from the model.
-
-    It reads the current to-do list directly from the
-    application''s internal task state and displays that state in a large UI view.
-
-
-    Use
-    this tool only to control visibility of the to-do list display.
+    If this call is made from the user''s
+    speech, call it as usual. if the user requests a to-do list from a text communication
+    source (like Discord), ignore this tool call unless the user explicitly asks
+    "Show it on your screen" "or "Show it on the screen" or something similar.
 
 
-    Important
-    rules:
+    This
+    tool does NOT accept task list contents from the model.
 
-    - Do NOT include task items in the payload.
+    It reads the current
+    to-do list directly from the application''s internal task state and displays
+    that state in a large UI view.
 
-    - Do NOT attempt
-    to restate or reconstruct the to-do list in the payload.
 
-    - The display always
-    uses the current internal task state.
+    Use this tool only to control visibility
+    of the to-do list display.
 
-    - If the user asks to show the to-do
-    list, use option "show".
 
-    - If the user asks to hide or close the to-do list,
-    use option "hide".
+    Important rules:
 
-    - If the user asks to show the to-do list for a specific
-    time, convert that request into durationMinutes as a float in minutes.
+    - Do NOT include task
+    items in the payload.
 
-    -
-    If the user asks to keep the list visible indefinitely, omit durationMinutes.
+    - Do NOT attempt to restate or reconstruct the to-do
+    list in the payload.
+
+    - The display always uses the current internal task
+    state.
+
+    - If the user asks to show the to-do list, use option "show".
 
     -
-    If the user simply asks to show the to-do list without specifying a duration,
-    default to durationMinutes = 5.
+    If the user asks to hide or close the to-do list, use option "hide".
+
+    - If
+    the user asks to show the to-do list for a specific time, convert that request
+    into durationMinutes as a float in minutes.
+
+    - If the user asks to keep the
+    list visible indefinitely, omit durationMinutes.
+
+    - If the user simply asks
+    to show the to-do list without specifying a duration, default to durationMinutes
+    = 5.
 
 
     Examples:
 
     - 20 minutes -> 20
 
-    -
-    30 seconds -> 0.5
+    - 30 seconds -> 0.5
 
-    - 1 hour -> 60'
+    -
+    1 hour -> 60'
   _jsonPayloadExampleForPrompt: "A valid example payload for showing the to-do list
     for 5 minutes:\n\n{\n  \"option\": \"show\",\n  \"durationMinutes\": 5\n}\n\nA
     valid example payload for showing the to-do list for 30 seconds:\n\n{\n  \"option\":
