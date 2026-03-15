@@ -123,7 +123,11 @@ MonoBehaviour:
     this tool is used, your response must be exactly:
 
 
-    "Updating. See you soon!"'
+    "Updating. See you soon!"
+
+
+    This
+    tool is ALWAYS a conversation ender.'
   _jsonPayloadExampleForPrompt: 'The only valid example:
 
     {
