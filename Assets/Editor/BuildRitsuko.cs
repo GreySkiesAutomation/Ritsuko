@@ -39,3 +39,4 @@ public static class BuildRitsuko
         return enabledScenePaths.ToArray();
     }
 }
+//doop
