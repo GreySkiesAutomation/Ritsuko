@@ -10,6 +10,8 @@ echo
 echo "Script launched at: $(date)"
 echo
 
+APPLE_CODESIGN_IDENTITY="Developer ID Application: Rico Balakit (D9JNXBPA9M)"
+
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 BUILD_DIR="$HOME/RitsukoBuild"
@@ -100,6 +102,42 @@ if [ ! -d "$APP_PATH" ]; then
     read
     exit 1
 fi
+
+echo "Signing built app..."
+codesign --force --deep --options runtime --timestamp --sign "$APPLE_CODESIGN_IDENTITY" "$APP_PATH"
+CODESIGN_EXIT_CODE=$?
+echo
+
+if [ "$CODESIGN_EXIT_CODE" -ne 0 ]; then
+    echo "Code signing failed."
+    echo
+    echo "Waiting 5 seconds..."
+    sleep 5
+    echo
+    echo "Press ENTER to close this window."
+    read
+    exit "$CODESIGN_EXIT_CODE"
+fi
+
+echo "Verifying signature..."
+codesign --verify --deep --strict --verbose=2 "$APP_PATH"
+VERIFY_EXIT_CODE=$?
+echo
+
+if [ "$VERIFY_EXIT_CODE" -ne 0 ]; then
+    echo "Code signature verification failed."
+    echo
+    echo "Waiting 5 seconds..."
+    sleep 5
+    echo
+    echo "Press ENTER to close this window."
+    read
+    exit "$VERIFY_EXIT_CODE"
+fi
+
+echo "Gatekeeper assessment..."
+spctl -a -vv "$APP_PATH"
+echo
 
 echo "Unity CLI build completed successfully."
 echo
