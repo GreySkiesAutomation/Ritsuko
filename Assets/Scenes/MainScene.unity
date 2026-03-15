@@ -2540,13 +2540,13 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 72
-  m_fontSizeBase: 36
+  m_fontSize: 80
+  m_fontSizeBase: 80
   m_fontWeight: 400
-  m_enableAutoSizing: 1
+  m_enableAutoSizing: 0
   m_fontSizeMin: 18
   m_fontSizeMax: 72
-  m_fontStyle: 0
+  m_fontStyle: 1
   m_HorizontalAlignment: 1
   m_VerticalAlignment: 256
   m_textAlignment: 65535
@@ -5099,8 +5099,8 @@ MonoBehaviour:
     payload for hiding the to-do list:\n\n{\n  \"option\": \"hide\"\n}"
   _toDoListDisplayPrefab: {fileID: 2003458453}
   _toDoListText: {fileID: 954012135}
-  _importantTextColor: {r: 1, g: 0, b: 0, a: 1}
-  _normalTextColor: {r: 0, g: 0, b: 0, a: 1}
+  _importantTextColor: {r: 0.6431373, g: 0, b: 0.07445346, a: 1}
+  _normalTextColor: {r: 0.02761037, g: 0, b: 0.21698111, a: 1}
   _urgentPrefix: '[URGENT] '
   _highPriorityPrefix: '[IMPORTANT] '
 --- !u!1 &1048650640
@@ -6085,7 +6085,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _autoRefresh: 1
-  _autoRefreshIntervalSeconds: 1
+  _autoRefreshIntervalSeconds: 0.1
   _showDoneTasks: 1
   _showCancelledTasks: 1
 --- !u!1 &1432921430
