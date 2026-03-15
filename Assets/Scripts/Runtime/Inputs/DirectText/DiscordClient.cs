@@ -8,10 +8,14 @@ using Runtime.Reasoning.DataTypes;
 using UnityEngine;
 using UnityEngine.Networking;
 using UnityEngine.Serialization;
+
 namespace Runtime.Inputs.DirectText
 {
     public class DiscordClient : PearlBehaviour
     {
+        private const int REQUEST_TIMEOUT_SECONDS = 5;
+        private const float COROUTINE_RESTART_DELAY_SECONDS = 1.0f;
+
         private string DiscordSidecarBaseUrl => GlobalManager.I.Configuration.DiscordSidecarBaseUrlAndPort;
 
         private float _pollIntervalSeconds => GlobalManager.I.Configuration.DiscordPollIntervalSeconds;
@@ -22,10 +26,67 @@ namespace Runtime.Inputs.DirectText
         {
             LogThreadUnsafe("[DiscordClient] Starting client.");
 
-            StartCoroutine(PollIncomingMessagesCoroutine());
-            StartCoroutine(HeartbeatCoroutine());
+            StartCoroutine(RunProtectedRepeatingCoroutine(
+                HeartbeatCoroutine(),
+                nameof(HeartbeatCoroutine)));
+
+            StartCoroutine(RunProtectedRepeatingCoroutine(
+                PollIncomingMessagesCoroutine(),
+                nameof(PollIncomingMessagesCoroutine)));
 
             SetInitialized();
+        }
+
+        private IEnumerator RunProtectedRepeatingCoroutine(IEnumerator repeatingCoroutine, string coroutineName)
+        {
+            while (true)
+            {
+                yield return StartCoroutine(RunCoroutineWithRestartProtection(repeatingCoroutine, coroutineName));
+
+                LogThreadUnsafeWarning(
+                    $"[DiscordClient] Repeating coroutine ended unexpectedly: {coroutineName}. Restarting in {COROUTINE_RESTART_DELAY_SECONDS} seconds.");
+
+                yield return new WaitForSeconds(COROUTINE_RESTART_DELAY_SECONDS);
+
+                if (coroutineName == nameof(HeartbeatCoroutine))
+                {
+                    repeatingCoroutine = HeartbeatCoroutine();
+                }
+                else if (coroutineName == nameof(PollIncomingMessagesCoroutine))
+                {
+                    repeatingCoroutine = PollIncomingMessagesCoroutine();
+                }
+                else
+                {
+                    LogThreadUnsafeError($"[DiscordClient] Unknown repeating coroutine name: {coroutineName}");
+                    yield break;
+                }
+            }
+        }
+
+        private IEnumerator RunCoroutineWithRestartProtection(IEnumerator coroutineToRun, string coroutineName)
+        {
+            while (true)
+            {
+                object currentYieldInstruction = null;
+
+                try
+                {
+                    if (coroutineToRun.MoveNext() == false)
+                    {
+                        yield break;
+                    }
+
+                    currentYieldInstruction = coroutineToRun.Current;
+                }
+                catch (Exception exception)
+                {
+                    LogThreadUnsafeError($"[DiscordClient] Coroutine crashed: {coroutineName}. Exception: {exception}");
+                    yield break;
+                }
+
+                yield return currentYieldInstruction;
+            }
         }
 
         // =========================
@@ -40,6 +101,7 @@ namespace Runtime.Inputs.DirectText
                 {
                     request.uploadHandler = new UploadHandlerRaw(Array.Empty<byte>());
                     request.downloadHandler = new DownloadHandlerBuffer();
+                    request.timeout = REQUEST_TIMEOUT_SECONDS;
                     request.SetRequestHeader("Content-Type", "application/json");
 
                     yield return request.SendWebRequest();
@@ -64,6 +126,8 @@ namespace Runtime.Inputs.DirectText
             {
                 using (var request = UnityWebRequest.Get(DiscordSidecarBaseUrl + "/poll-incoming"))
                 {
+                    request.timeout = REQUEST_TIMEOUT_SECONDS;
+
                     yield return request.SendWebRequest();
 
                     if (request.result != UnityWebRequest.Result.Success)
@@ -123,7 +187,6 @@ namespace Runtime.Inputs.DirectText
         // SEND DM
         // =========================
 
-
         public void SendDirectMessage(string messageText)
         {
             StartCoroutine(SendDirectMessageCoroutine(messageText));
@@ -144,6 +207,7 @@ namespace Runtime.Inputs.DirectText
             {
                 request.uploadHandler = new UploadHandlerRaw(bodyRaw);
                 request.downloadHandler = new DownloadHandlerBuffer();
+                request.timeout = REQUEST_TIMEOUT_SECONDS;
 
                 request.SetRequestHeader("Content-Type", "application/json");
 
