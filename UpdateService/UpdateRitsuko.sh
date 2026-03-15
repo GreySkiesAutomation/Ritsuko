@@ -108,7 +108,8 @@ echo "Signing built app..."
 codesign --force --deep --options runtime --timestamp \
   --keychain ~/Library/Keychains/login.keychain-db \
   --sign "Developer ID Application: Rico Balakit (DJ9NXBPA9M)" \
-  "$APP_PATH"CODESIGN_EXIT_CODE=$?
+  "$APP_PATH"
+CODESIGN_EXIT_CODE=$?
 echo
 
 if [ "$CODESIGN_EXIT_CODE" -ne 0 ]; then
