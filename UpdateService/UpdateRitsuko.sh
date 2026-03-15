@@ -112,12 +112,5 @@ open "$APP_PATH"
 echo
 
 echo "Update flow complete."
-echo
-echo "Waiting 5 seconds..."
-sleep 5
-echo
-echo "ready for next step"
-echo
-echo "Press ENTER to close this window."
-
-read
+sleep 1
+exit 0
