@@ -11,6 +11,7 @@ echo "Script launched at: $(date)"
 echo
 
 APPLE_CODESIGN_IDENTITY="Developer ID Application: Rico Balakit (D9JNXBPA9M)"
+APPLE_KEYCHAIN_PATH="$HOME/Library/Keychains/login.keychain-db"
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
@@ -104,8 +105,10 @@ if [ ! -d "$APP_PATH" ]; then
 fi
 
 echo "Signing built app..."
-codesign --force --deep --options runtime --timestamp --sign "$APPLE_CODESIGN_IDENTITY" "$APP_PATH"
-CODESIGN_EXIT_CODE=$?
+codesign --force --deep --options runtime --timestamp \
+  --keychain ~/Library/Keychains/login.keychain-db \
+  --sign "Developer ID Application: Rico Balakit (DJ9NXBPA9M)" \
+  "$APP_PATH"CODESIGN_EXIT_CODE=$?
 echo
 
 if [ "$CODESIGN_EXIT_CODE" -ne 0 ]; then
