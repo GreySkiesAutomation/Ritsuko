@@ -48,14 +48,11 @@ MonoBehaviour:
   m_statusReadOnly: 
   _toolName: LogSendTool
   _toolPriority: 0
-  _descriptionForPrompt: 'Use this tool when the user asks to see logs. The tool
-    opens the platform default text editor so the user may inspect it.
+  _descriptionForPrompt: 'Use this tool when the user asks to view logs.
 
 
-    There
-    are no options, so the payload is empty.'
-  _jsonPayloadExampleForPrompt: 'The only valid example:
+    Payload
+    is empty.'
+  _jsonPayloadExampleForPrompt: 'Payload:
 
-    {
-
-    }'
+    {}'

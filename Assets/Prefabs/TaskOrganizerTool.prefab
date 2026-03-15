@@ -48,158 +48,20 @@ MonoBehaviour:
   m_statusReadOnly: 
   _toolName: TaskOrganizer
   _toolPriority: 0
-  _descriptionForPrompt: 'Use this tool to manage the assistant''s internal to-do
-    list.
-
-
-    The to-do list represents short-term tasks the user wants to track.
-    Tasks are small, practical items such as work tasks, personal reminders, domestic
-    chores, hobby goals, or tasks related to improving the assistant itself.
-
-
-    Use
-    this tool when the user:
-
-    - asks to add a task
-
-    - asks to remove or delete
-    a task
-
-    - asks to rename or modify a task
-
-    - asks to change a task''s
-    status
-
-    - asks to change category, priority, or urgency
-
-    - asks to update
-    notes for a task
-
-
-    Tasks are identified by an integer taskId.
-
-
-    Important
-    rules:
-
-    - Do NOT invent tasks unless the user explicitly asks to add one.
-
-    -
-    When creating a task, the taskId is assigned automatically by the system.
-
-    -
-    Task names should be short and clear (maximum 128 characters).
-
-    - Notes should
-    be short descriptors, not long logs (maximum ~256 characters).
-
-    - The tool
-    accepts either a single action object OR an array of action objects.
-
-    - If
-    no category, priority, or urgency is defined, set to "UNDEFINED"
-
-    - if no
-    status is defined, assume "PENDING"
-
-
-    Available actions:
-
-    createTask
-
-    deleteTask
-
-    rename
-
-    setCategory
-
-    setPriority
-
-    setUrgency
-
-    setStatus
-
-    setNotes
-
-
-    Enum
-    values:
-
-
-    category:
-
-    UNDEFINED
-
-    WORK
-
-    PERSONAL
-
-    HOBBY
-
-    DOMESTIC
-
-    RITSUKO
-
-
-    priority:
-
-    UNDEFINED
-
-    LOW
-
-    MEDIUM
-
-    HIGH
-
-
-    urgency:
-
-    UNDEFINED
-
-    LOW
-
-    MEDIUM
-
-    HIGH
-
-
-    status:
-
-    PENDING
-
-    INPROGRESS
-
-    BLOCKED
-
-    DONE
-
-    CANCELLED
-
-    ARCHIVED
-
-
-    Prefer
-    batching multiple actions into a single payload array if several changes are
-    needed at once.
-
-
-    Finally, call the ToDoListDisplayTool either always when
-    the user is in "Speech" mode, or if the user requests it from any other mode,
-    whenever we make any changes to the to-do list, default display time of five
-    minutes. Because the tool priority is defined, this will always deterministically
-    run after to-do list changes have been made.'
-  _jsonPayloadExampleForPrompt: "A valid single action example:\n\n{\n  \"action\":
-    \"createTask\",\n  \"name\": \"Investigate webcam timeout issue\",\n  \"category\":
-    \"WORK\",\n  \"priority\": \"HIGH\",\n  \"urgency\": \"MEDIUM\",\n  \"status\":
-    \"INPROGRESS\",\n  \"notes\": \"Testing overnight with C910 camera\"\n}\n\n\n{\n 
-    \"action\": \"createTask\",\n  \"name\": \"Task A\",\n  \"category\": \"UNDEFINED\",\n 
-    \"priority\": \"UNDEFINED\",\n  \"urgency\": \"UNDEFINED\",\n  \"status\": \"PENDING\",\n 
-    \"notes\": \"Seems to be a vaguely defined task\"\n}\n\nA valid task status update:\n\n{\n 
-    \"action\": \"setStatus\",\n  \"taskId\": 12,\n  \"status\": \"INPROGRESS\"\n}\n\n\nA
-    valid rename example:\n\n{\n  \"action\": \"rename\",\n  \"taskId\": 12,\n  \"name\":
-    \"Investigate webcam USB timeout\"\n}\n\n\nA valid multi-action example:\n\n[\n 
-    {\n    \"action\": \"createTask\",\n    \"name\": \"Fix Ritsuko task prompt formatting\",\n   
-    \"category\": \"RITSUKO\",\n    \"priority\": \"HIGH\",\n    \"urgency\": \"MEDIUM\"\n 
-    },\n  {\n    \"action\": \"setStatus\",\n    \"taskId\": 7,\n    \"status\":
-    \"DONE\"\n  },\n  {\n    \"action\": \"setNotes\",\n    \"taskId\": 4,\n    \"notes\":
-    \"Blocked waiting for hardware test results\"\n  }\n]"
+  _descriptionForPrompt: "Manage the assistant's internal to-do list (short-term
+    user tasks).\n\nUse when the user requests task changes:\nadd | delete | rename
+    | setStatus | setCategory | setPriority | setUrgency | setNotes.\n\nRules:\n-
+    Never invent tasks.\n- taskId auto-assigned on create.\n- name \u2264128 chars,
+    notes \u2264256 chars.\n- Payload = single action OR array of actions.\n- Missing
+    category/priority/urgency \u2192 UNDEFINED\n- Missing status \u2192 PENDING\n-
+    Prefer batching multiple actions.\n\nEnums:\ncategory: UNDEFINED | WORK | PERSONAL
+    | HOBBY | DOMESTIC | RITSUKO\npriority: UNDEFINED | LOW | MEDIUM | HIGH\nurgency:
+    UNDEFINED | LOW | MEDIUM | HIGH\nstatus: PENDING | INPROGRESS | BLOCKED | DONE
+    | CANCELLED | ARCHIVED\n\nAfter any modification:\nCall ToDoListDisplayTool (default
+    5 min)."
+  _jsonPayloadExampleForPrompt: "Create task\r\n{\r\n \"action\":\"createTask\",\r\n
+    \"name\":\"Investigate webcam timeout\",\r\n \"category\":\"WORK\",\r\n \"priority\":\"HIGH\",\r\n
+    \"urgency\":\"MEDIUM\"\r\n}\r\n\r\nUpdate status\r\n{\r\n \"action\":\"setStatus\",\r\n
+    \"taskId\":12,\r\n \"status\":\"INPROGRESS\"\r\n}\r\n\r\nBatch example\r\n[\r\n
+    {\"action\":\"createTask\",\"name\":\"Fix prompt formatting\",\"category\":\"RITSUKO\"},\r\n
+    {\"action\":\"setStatus\",\"taskId\":7,\"status\":\"DONE\"}\r\n]\r\n"

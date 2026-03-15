@@ -48,12 +48,12 @@ MonoBehaviour:
   m_statusReadOnly: 
   _toolName: SettingsTool
   _toolPriority: 0
-  _descriptionForPrompt: Use this tool to change assistant settings such as behavior
-    mode, Quiet Mode, Audit Mode, or whether the assistant responds to its name.
-    Use this whenever the user explicitly asks to enable, disable, or change one
-    of these settings.
-  _jsonPayloadExampleForPrompt: "A valid single-setting example:\n{\n  \"settingName\":
-    \"QuietMode\",\n  \"value\": \"On\"\n}\n\nA valid multi-setting example:\n[\n 
-    {\n    \"settingName\": \"Mode\",\n    \"value\": \"ProductiveWork\"\n  },\n 
-    {\n    \"settingName\": \"AuditMode\",\n    \"value\": \"On\"\n  },\n  {\n   
-    \"settingName\": \"RespondToName\",\n    \"value\": \"Off\"\n  }\n]"
+  _descriptionForPrompt: 'Use this tool to change assistant settings (Mode, QuietMode,
+    AuditMode, RespondToName).
+
+
+    Call when the user explicitly asks to enable,
+    disable, or change one of these settings.'
+  _jsonPayloadExampleForPrompt: "{ \"settingName\":\"QuietMode\",\"value\":\"On\"
+    }\n\n[\n {\"settingName\":\"Mode\",\"value\":\"ProductiveWork\"},\n {\"settingName\":\"AuditMode\",\"value\":\"On\"},\n
+    {\"settingName\":\"RespondToName\",\"value\":\"Off\"}\n]"

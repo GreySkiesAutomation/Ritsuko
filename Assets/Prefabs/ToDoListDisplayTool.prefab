@@ -48,70 +48,26 @@ MonoBehaviour:
   m_statusReadOnly: 
   _toolName: ToDoListDisplayTool
   _toolPriority: 1000
-  _descriptionForPrompt: 'Use this tool when the user asks to see, show, open, display,
-    hide, or close the full to-do list UI.
+  _descriptionForPrompt: "Control visibility of the full to-do list UI.\n\nUse when
+    the user asks to show/open/display or hide/close the to-do list.\n\nText vs speech:\nIf
+    the request comes from text (e.g. Discord), ignore unless the user explicitly
+    asks to show it on your screen.\n\nRules:\n- Payload controls visibility only.\n-
+    Never include or reconstruct task items.\n- The UI reads the current internal
+    task state.\n\nOptions:\nshow | hide\n\nDuration:\n- If user specifies time \u2192
+    convert to durationMinutes (float minutes).\n- If unspecified \u2192 default
+    durationMinutes = 5.\n- If user wants it indefinitely \u2192 omit durationMinutes."
+  _jsonPayloadExampleForPrompt: '{ "option":"show","durationMinutes":5 }
 
 
-    If this call is made from the user''s
-    speech, call it as usual. if the user requests a to-do list from a text communication
-    source (like Discord), ignore this tool call unless the user explicitly asks
-    "Show it on your screen" "or "Show it on the screen" or something similar.
+    {
+    "option":"show","durationMinutes":0.5 }
 
 
-    This
-    tool does NOT accept task list contents from the model.
-
-    It reads the current
-    to-do list directly from the application''s internal task state and displays
-    that state in a large UI view.
+    { "option":"show" }
 
 
-    Use this tool only to control visibility
-    of the to-do list display.
-
-
-    Important rules:
-
-    - Do NOT include task
-    items in the payload.
-
-    - Do NOT attempt to restate or reconstruct the to-do
-    list in the payload.
-
-    - The display always uses the current internal task
-    state.
-
-    - If the user asks to show the to-do list, use option "show".
-
-    -
-    If the user asks to hide or close the to-do list, use option "hide".
-
-    - If
-    the user asks to show the to-do list for a specific time, convert that request
-    into durationMinutes as a float in minutes.
-
-    - If the user asks to keep the
-    list visible indefinitely, omit durationMinutes.
-
-    - If the user simply asks
-    to show the to-do list without specifying a duration, default to durationMinutes
-    = 5.
-
-
-    Examples:
-
-    - 20 minutes -> 20
-
-    - 30 seconds -> 0.5
-
-    -
-    1 hour -> 60'
-  _jsonPayloadExampleForPrompt: "A valid example payload for showing the to-do list
-    for 5 minutes:\n\n{\n  \"option\": \"show\",\n  \"durationMinutes\": 5\n}\n\nA
-    valid example payload for showing the to-do list for 30 seconds:\n\n{\n  \"option\":
-    \"show\",\n  \"durationMinutes\": 0.5\n}\n\nA valid example payload for showing
-    the to-do list indefinitely:\n\n{\n  \"option\": \"show\"\n}\n\nA valid example
-    payload for hiding the to-do list:\n\n{\n  \"option\": \"hide\"\n}"
+    { "option":"hide"
+    }'
   _toDoListDisplayPrefab: {fileID: 0}
   _toDoListText: {fileID: 0}
   _importantTextColor: {r: 0.6431373, g: 0, b: 0.07445346, a: 1}

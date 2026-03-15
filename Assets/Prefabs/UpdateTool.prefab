@@ -48,86 +48,48 @@ MonoBehaviour:
   m_statusReadOnly: 
   _toolName: Update
   _toolPriority: -9999
-  _descriptionForPrompt: 'Use this tool only when the user explicitly asks you to
-    update yourself or your software.
+  _descriptionForPrompt: 'Use only when the user explicitly requests that YOU update
+    yourself or your software.
 
 
-    Examples of valid phrases include:
-
-    "Update
-    yourself"
-
-    "Upgrade yourself"
-
-    "Update your software"
-
-    "Update your
-    app"
-
-    "Update your client"
-
-    "Upgrade your software"
-
-    "Upgrade your
-    app"
+    Valid intent: "update/upgrade yourself", "update
+    your app/client/software".
 
 
-    The request must explicitly refer to you or your software (for example:
-    "you", "yourself", or "your app/client/software").
+    Do NOT trigger when:
+
+    - update target is
+    unclear ("update", "update it")
+
+    - discussing updates generally
+
+    - referring
+    to other software
+
+    - to-do items mention updates
 
 
-    Examples of invalid
-    requests:
-
-    "Update" (with no reference to what should be updated)
-
-    "Upgrade"
-    (with no reference to what should be upgraded)
-
-    "Update it" (with a vague
-    reference to what should be updated)
-
-    "Upgrade it" (with a vague reference
-    to what should be upgraded)
+    Never infer intent.
 
 
-    Do not infer or assume the user wants an update.
-
-
-    Do
-    not use this tool when the user is discussing updates conceptually or referring
-    to updating other software.
-
-
-    Do not confuse this with to-do list tasks about
-    updating software, clients, or apps.
-
-
-    This tool must only be called by itself.
-    It must never be combined with other tool requests.
-
-
-    If the user requests
-    an update together with any other action or tool request, do not call this tool
-    or any other tools. Instead respond with text explaining that updating can only
+    This
+    tool must run alone. If combined with other requests, reply that updating must
     be performed by itself.
 
 
-    When in doubt, do not use this tool. Instead reply:
+    Fallback reply when unclear:
 
-    "If
-    you want me to update myself, explicitly tell me: Update yourself."
+    "If you want
+    me to update myself, explicitly tell me: Update yourself."
 
 
-    If
-    this tool is used, your response must be exactly:
-
+    If used, reply
+    exactly:
 
     "Updating. See you soon!"
 
 
-    This
-    tool is ALWAYS a conversation ender.'
+    Conversation ends immediately.'
   _jsonPayloadExampleForPrompt: 'The only valid example:
 
     {
