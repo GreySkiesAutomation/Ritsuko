@@ -1,0 +1,59 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &2356659713528706096
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 4080509691226816688}
+  - component: {fileID: 6692703741653685903}
+  m_Layer: 0
+  m_Name: SettingsTool
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &4080509691226816688
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2356659713528706096}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &6692703741653685903
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2356659713528706096}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 23e8919d91354f418ab461978e7f94b3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  CurrentLogLevel: 3
+  m_statusReadOnly: 
+  _toolName: SettingsTool
+  _toolPriority: 0
+  _descriptionForPrompt: Use this tool to change assistant settings such as behavior
+    mode, Quiet Mode, Audit Mode, or whether the assistant responds to its name.
+    Use this whenever the user explicitly asks to enable, disable, or change one
+    of these settings.
+  _jsonPayloadExampleForPrompt: "A valid single-setting example:\n{\n  \"settingName\":
+    \"QuietMode\",\n  \"value\": \"On\"\n}\n\nA valid multi-setting example:\n[\n 
+    {\n    \"settingName\": \"Mode\",\n    \"value\": \"ProductiveWork\"\n  },\n 
+    {\n    \"settingName\": \"AuditMode\",\n    \"value\": \"On\"\n  },\n  {\n   
+    \"settingName\": \"RespondToName\",\n    \"value\": \"Off\"\n  }\n]"

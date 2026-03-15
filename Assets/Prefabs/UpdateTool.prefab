@@ -1,0 +1,135 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &4193147306751074896
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 6784965136460897997}
+  - component: {fileID: 6251000780929824445}
+  m_Layer: 0
+  m_Name: UpdateTool
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &6784965136460897997
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4193147306751074896}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &6251000780929824445
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4193147306751074896}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a45f44d85cfa43adb9008cc0ce89fa69, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  CurrentLogLevel: 3
+  m_statusReadOnly: 
+  _toolName: Update
+  _toolPriority: -9999
+  _descriptionForPrompt: 'Use this tool only when the user explicitly asks you to
+    update yourself or your software.
+
+
+    Examples of valid phrases include:
+
+    "Update
+    yourself"
+
+    "Upgrade yourself"
+
+    "Update your software"
+
+    "Update your
+    app"
+
+    "Update your client"
+
+    "Upgrade your software"
+
+    "Upgrade your
+    app"
+
+
+    The request must explicitly refer to you or your software (for example:
+    "you", "yourself", or "your app/client/software").
+
+
+    Examples of invalid
+    requests:
+
+    "Update" (with no reference to what should be updated)
+
+    "Upgrade"
+    (with no reference to what should be upgraded)
+
+    "Update it" (with a vague
+    reference to what should be updated)
+
+    "Upgrade it" (with a vague reference
+    to what should be upgraded)
+
+
+    Do not infer or assume the user wants an update.
+
+
+    Do
+    not use this tool when the user is discussing updates conceptually or referring
+    to updating other software.
+
+
+    Do not confuse this with to-do list tasks about
+    updating software, clients, or apps.
+
+
+    This tool must only be called by itself.
+    It must never be combined with other tool requests.
+
+
+    If the user requests
+    an update together with any other action or tool request, do not call this tool
+    or any other tools. Instead respond with text explaining that updating can only
+    be performed by itself.
+
+
+    When in doubt, do not use this tool. Instead reply:
+
+    "If
+    you want me to update myself, explicitly tell me: Update yourself."
+
+
+    If
+    this tool is used, your response must be exactly:
+
+
+    "Updating. See you soon!"'
+  _jsonPayloadExampleForPrompt: 'The only valid example:
+
+    {
+
+    }'
+  _updateToolIndicatorPrefab: {fileID: 0}
+  _updateToolIndicatorText: {fileID: 0}
+  _updateScriptAbsolutePath: /Users/ritsuko/UnityProjects/Ritsuko/UpdateService/UpdateRitsuko.sh
+  _updateCountdownSeconds: 5
